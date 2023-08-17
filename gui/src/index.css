@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
+
+body{
+  background: #020202;
+  font-family: 'Rubik', sans-serif;
+}
+
+.loading{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
+
+.loading::before{
+  content: "...";
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  background: white;
+  border-radius: 10px;
+  transform: translate(0, -10px);
+  color: white;
+  box-shadow:
+    #fff 30px 0 0,
+    #fff -30px 0 0;
+  animation: loading 2s linear infinite;
+}
+
+@keyframes loading {
+  0% {
+    transform: translate(0, -10px) scale(1, 1);
+    border-radius: 50%;
+    color: white;
+    box-shadow:
+      #fff 30px 0px 0,
+      #fff -30px 0px 0;
+  }
+  15% {
+    transform: translate(0, -10px) scale(1, 1);
+    border-radius: 50%;
+    color: white;
+    box-shadow:
+      #fff 30px 0px 0,
+      #fff -30px -10px 0;
+  }
+  30% {
+    transform: translate(0, -20px) scale(1, 1);
+    border-radius: 50%;
+    color: white;
+    box-shadow:
+      #fff 30px 10px 0,
+      #fff -30px 10px 0;
+
+  }
+  45% {
+    transform: translate(0, -10px) scale(1, 1);
+    border-radius: 50%;
+    color: white;
+    box-shadow:
+      #fff 30px -10px 0,
+      #fff -30px 0px 0;
+  }
+  60% {
+    transform: translate(0, -10px) scale(1, 1);
+    border-radius: 50%;
+    color: white;
+    box-shadow:
+      #fff 30px 0px 0,
+      #fff -30px 0px 0;
+  }
+  70%{
+    transform: translate(0, -10px) scale(5, 1);
+    border-radius: 0;
+    color: black;
+    box-shadow:
+      #020202 30px 0px 0,
+      #020202 -30px 0px 0;
+  }
+  95%{
+    transform: translate(0, -10px) scale(6, 1);
+    border-radius: 0;
+    color: black;
+    box-shadow:
+      #020202 30px 0px 0,
+      #020202 -30px 0px 0;
+  }
+}
