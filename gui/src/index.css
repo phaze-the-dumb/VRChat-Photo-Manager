@@ -1,8 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
 
+* {
+  box-sizing: border-box;
+}
+
 body{
   background: #020202;
   font-family: 'Rubik', sans-serif;
+}
+
+.group-title{
+  color: white;
+  font-size: 30px;
+  width: 100%;
+  padding: 10px;
+}
+
+.smol-date{
+  color: #777;
+  font-size: 20px;
+}
+
+.image-container{
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 50px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.image-wrapper{
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(transparent, #00354e);
+  margin: 10px;
+  display: inline-block;
+  opacity: 0;
 }
 
 .loading{

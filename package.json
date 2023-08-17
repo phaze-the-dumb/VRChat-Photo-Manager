@@ -21,7 +21,8 @@
     "@fastify/websocket": "^8.2.0",
     "electron-squirrel-startup": "^1.0.0",
     "fastify": "^4.20.0",
-    "png-metadata": "github:phaze-the-dumb/png-metadata-lib"
+    "png-metadata": "github:phaze-the-dumb/png-metadata-lib",
+    "sharp": "^0.32.5"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.2.1",

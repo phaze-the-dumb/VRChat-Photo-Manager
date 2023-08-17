@@ -6,8 +6,8 @@ if(require('electron-squirrel-startup'))app.quit();
 
 app.on('ready', () => {
   let mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 600
+    width: 1160,
+    height: 700
   });
 
   mainWindow.setMenuBarVisibility(false);

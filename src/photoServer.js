@@ -2,8 +2,9 @@ const fs = require('fs');
 const fastify = require('fastify')();
 const { randomUUID } = require('crypto');
 const { PNGImage } = require('png-metadata');
+const mergeSort = require('./mergeSort');
 const os = require('os');
-const { mergeSort } = require('./mergesort');
+const sharp = require('sharp');
 
 let allowAuth = { allow: true };
 let keys = [];
@@ -33,15 +34,11 @@ class Key{
     this.key = key;
     this.socket = null;
 
-    this.timeout = setTimeout(() =>
-      keys = keys.filter(key => key.key !== key.key), 10000);
-  }
-
-  heartbeat(){
-    clearTimeout(this.timeout);
-
-    this.timeout = setTimeout(() =>
-      keys = keys.filter(key => key.key!== key.key), 10000);
+    setTimeout(() => {
+      if(!this.socket){
+        keys = keys.filter(key => key.key !== key.key);
+      }
+    }, 500);
   }
 }
 
@@ -55,33 +52,11 @@ let genNewKey = () => {
 fastify.register(require('@fastify/websocket'))
 
 fastify.register(async ( fastify ) => {
-  fastify.options('/api/v1/heartbeat', ( req, reply ) => {
-    reply.header('Content-Type', 'application/json');
-    reply.header('Access-Control-Allow-Origin', '*');
-    reply.header('Access-Control-Allow-Headers', 'key');
-
-    reply.send({ ok: true });
-  });
-
   fastify.options('/api/v1/photos', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
     reply.header('Access-Control-Allow-Headers', 'key');
 
-    reply.send({ ok: true });
-  });
-
-  fastify.get('/api/v1/heartbeat', ( req, reply ) => {
-    reply.header('Content-Type', 'application/json');
-    reply.header('Access-Control-Allow-Origin', '*');
-    reply.header('Access-Control-Allow-Headers', 'key');
-
-    let key = req.headers.key;
-    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
-    key = keys.find(k => k.key === key);
-    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
-
-    key.heartbeat();
     reply.send({ ok: true });
   });
 
@@ -108,6 +83,10 @@ fastify.register(async ( fastify ) => {
     if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
 
     key.socket = socket;
+
+    socket.on('close', () => {
+      keys = keys.filter(k => k.key !== key.key);
+    })
   })
 
   fastify.get('/api/v1/requestKey', ( req, reply ) => {
@@ -125,21 +104,44 @@ fastify.register(async ( fastify ) => {
     reply.send({ ok: true, waiting: true, orderID: keyID });
   })
 
-  fastify.get('/api/v1/photos/:id', ( req, reply ) => {
+  fastify.get('/api/v1/photos/:id/full', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
 
-    let key = req.headers.key;
-    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    let key = req.query.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key Header.' });
     key = keys.find(k => k.key === key);
     if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
 
     if(inScan)return reply.send({ ok: true, message: 'Still Scanning Folders.' });
 
-    let image = findImageById(req.query.id);
+    let image = pictures.find(x => x.timestamp == req.params.id)
     if(!image)return reply.send({ ok: false, message: 'Image not found.' });
 
+    reply.header('Content-Type', 'image/png');
     reply.send(fs.readFileSync(image.path));
+  })
+
+  fastify.get('/api/v1/photos/:id/scaled', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+
+    let key = req.query.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key Header.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(inScan)return reply.send({ ok: true, message: 'Still Scanning Folders.' });
+
+    let image = pictures.find(x => x.timestamp == req.params.id)
+    if(!image)return reply.send({ ok: false, message: 'Image not found.' });
+
+    reply.header('Content-Type', 'image/png');
+
+    sharp(fs.readFileSync(image.path))
+      .resize(...findBestResolution(image.res))
+      .toBuffer()
+      .then(buffer => reply.send(buffer));
   })
 })
 
@@ -167,7 +169,7 @@ let scanFolders = async () => {
   for(let folder of config.picFolders)
     await startSpider(folder, pictures);
 
-  mergeSort(pictures, 0, pictures.length - 1);
+  mergeSort(pictures);
   inScan = false;
 }
 
@@ -181,6 +183,12 @@ let getDate = ( str, ms ) => {
 
   return date;
 }
+
+let findBestResolution = ( originalRes ) => {
+  let sizeMultiplier = 200 / originalRes[1];
+
+  return [ Math.floor(originalRes[0] * sizeMultiplier), 200 ];
+};
 
 module.exports = { allowAuth };
 scanFolders();
