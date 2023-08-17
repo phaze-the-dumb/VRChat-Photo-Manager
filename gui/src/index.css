@@ -44,6 +44,34 @@ body{
   z-index: 10000;
 }
 
+.image-view-controls{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  color: white;
+  font-size: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100001;
+  transform: translate(-50%, 0);
+}
+
+.image-controls-button{
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  transition: 0.5s;
+  border-radius: 50%;
+  align-items: center;
+  margin: 0 20px;
+}
+
+.image-controls-button:hover{
+  background: #fff5;
+}
+
 .image-close{
   position: fixed;
   top: 10px;
@@ -51,7 +79,7 @@ body{
   color: white;
   font-size: 20px;
   transition: 0.5s;
-  border-radius: 50px;
+  border-radius: 50%;
   width: 30px;
   height: 30px;
   display: flex;
@@ -138,6 +166,32 @@ body{
   user-select: none;
   margin: 10px;
   opacity: 0;
+}
+
+.notification-copy{
+  background: #4445;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -50px);
+  padding: 10px 20px;
+  color: white;
+  z-index: 1000001;
+  opacity: 0;
+  box-shadow: #0005 0 0 10px;
+}
+
+.nav-bar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  z-index: 1000001;
+  box-shadow: #000 0 0 10px;
+  background: #000;
 }
 
 @keyframes loading {
