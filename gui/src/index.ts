@@ -12,6 +12,7 @@ let currentImage: null | HTMLImageElement = null;
 let currentPhoto: any = null;
 let isCtxMenuOpen = false;
 let mouseOverCtxMenu = false;
+let trayOpen = 'none';
 
 let ctxmenu = document.querySelector<HTMLElement>('.context-menu')!;
 
@@ -382,8 +383,16 @@ let showContextMenuImageView = ( photo: any, img: HTMLImageElement, e: MouseEven
 }
 
 let showPhotoUI = ( photo: any, img: HTMLImageElement ) => {
+  console.log(photo);
+
   let c = img.parentElement!;
   imgBoundingPos = img.getBoundingClientRect();
+
+  if(photo.warnings.length > 0)
+    document.querySelector<HTMLElement>('#image-warning-button')!.style.display = 'flex';
+
+  if(photo.VRCXData)
+    document.querySelector<HTMLElement>('#image-info-button')!.style.display = 'flex';
 
   c.style.position = 'fixed';
   c.style.top = imgBoundingPos.y + 'px';
@@ -482,6 +491,16 @@ let showPhotoUI = ( photo: any, img: HTMLImageElement ) => {
 document.querySelector<HTMLElement>('.image-close')!.onclick = () => {
   window.onresize = () => {};
 
+  if(trayOpen !== 'none') {
+    anime({
+      targets: '.image-tray',
+      opacity: 0,
+      translateY: '-50px',
+      easing: 'linear',
+      duration: 300,
+    })
+  }
+
   setTimeout(() => {
     anime({
       targets: '.image-view',
@@ -557,3 +576,63 @@ document.querySelector<HTMLElement>('#image-copy-button')!.onclick = () => {
 }
 
 document.querySelector<HTMLElement>('#image-share-button')!.onclick = () => {};
+
+document.querySelector<HTMLElement>('#image-warning-button')!.onclick = () => {
+  if(trayOpen === 'warnings'){
+    anime({
+      targets: '.image-tray',
+      opacity: 0,
+      translateY: '-50px',
+      easing: 'linear',
+      duration: 300,
+      complete: () => {
+        document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
+        document.querySelector('.image-tray')!.innerHTML = '';
+        trayOpen = 'none';
+      }
+    });
+
+    return;
+  }
+
+  let text = '';
+
+  currentPhoto.warnings.forEach(( w: string ) =>
+    text += `<div class="warning"><div class="icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="body">${w}</div></div>`)
+
+  if(trayOpen !== 'none') {
+    anime({
+      targets: '.image-tray',
+      opacity: 0,
+      translateY: '-50px',
+      easing: 'linear',
+      duration: 300,
+      complete: () => {
+        document.querySelector('.image-tray')!.innerHTML = text;
+
+        anime.set('.image-tray', { translateX: '-50%', translateY: '-50px' });
+        anime({
+          targets: '.image-tray',
+          opacity: 1,
+          translateY: 0,
+        })
+
+        trayOpen = 'warnings';
+      }
+    })
+  } else{
+    document.querySelector('.image-tray')!.innerHTML = text;
+    document.querySelector<HTMLElement>('.image-tray')!.style.display = 'flex';
+
+    anime.set('.image-tray', { translateX: '-50%', translateY: '-50px' });
+    anime({
+      targets: '.image-tray',
+      opacity: 1,
+      translateY: 0,
+    })
+
+    trayOpen = 'warnings';
+  }
+};
+
+document.querySelector<HTMLElement>('#image-info-button')!.onclick = () => {};

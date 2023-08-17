@@ -25,6 +25,18 @@ class Picture{
     this.date = getDate(this.name.replace('VRChat_', '').split('.')[0], this.name.split('.')[1].split('_')[0]);
     this.timestamp = this.date.getTime();
     this.res =  this.name.split('.')[1].split('_')[1].split('x').map(x => parseInt(x));
+    this.warnings = [];
+    this.VRCXData = null;
+
+    let meta = new PNGImage(fs.readFileSync(this.path));
+
+    if(meta.width !== this.res[0] || meta.height !== this.res[1]){
+      this.warnings.push('File name claims to be '+this.res[0]+'x'+this.res[1]+' pixels, but it is '+meta.width+'x'+meta.height);
+      this.res = [ meta.width, meta.height ];
+    }
+
+    if(meta.meta && meta.meta.Description && meta.meta.Description.application === 'VRCX')
+      this.VRCXData = meta.meta.Description;
   }
 }
 

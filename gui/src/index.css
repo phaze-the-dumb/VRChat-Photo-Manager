@@ -189,9 +189,46 @@ body{
   left: 0;
   width: 100%;
   height: 50px;
-  z-index: 1000001;
+  z-index: 10000;
   box-shadow: #000 0 0 10px;
   background: #000;
+}
+
+#image-warning-button, #image-info-button {
+  display: none;
+}
+
+.image-tray{
+  background: #4445;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  position: fixed;
+  bottom: 75px;
+  left: 50%;
+  transform: translate(-50%, -50px);
+  padding: 10px 20px;
+  color: white;
+  z-index: 1000001;
+  opacity: 0;
+  box-shadow: #0005 0 0 10px;
+}
+
+.warning{
+  width: 400px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.warning .icon {
+  color: yellow;
+  font-size: 40px;
+  width: 50px;
+}
+
+.warning .body{
+  width: calc(100% - 50px);
 }
 
 @keyframes loading {
