@@ -6,6 +6,22 @@ let photos: any = [];
 let imageContainer = document.querySelector<HTMLElement>('.image-container')!;
 let lastPhotoIndex = 0;
 let currentGroupDate = "";
+let enlargedImage: null | HTMLElement = null;
+let imgBoundingPos: null | DOMRect = null;
+let currentImage: null | HTMLElement = null;
+let currentPhoto: any = null;
+let isCtxMenuOpen = false;
+let mouseOverCtxMenu = false;
+
+
+let ctxmenu = document.querySelector<HTMLElement>('.context-menu')!;
+
+ctxmenu.onmouseover = () => mouseOverCtxMenu = true;
+ctxmenu.onmouseleave = () => mouseOverCtxMenu = false;
+
+document.body.onclick = () => {
+  if(isCtxMenuOpen && !mouseOverCtxMenu) closeCtxMenu();
+}
 
 let days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ];
 let months = ["January", "February", "March", "April", "May", "June", "July","August", "September", "October", "November", "December"];
@@ -50,6 +66,8 @@ let loadImages = async () => {
 
       let img = document.createElement('img');
       img.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/scaled?key=' + localStorage.getItem('token')!;
+      img.draggable = false;
+      img.crossOrigin = 'anonymous';
   
       imageContainer.appendChild(div);
       div.appendChild(img);
@@ -57,6 +75,18 @@ let loadImages = async () => {
 
       div.style.height = '200px';
       div.style.width = Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px';
+
+      div.onclick = () => {
+        if(isCtxMenuOpen)return closeCtxMenu();
+        showPhotoUI( photo, img );
+      }
+
+      div.oncontextmenu = ( e ) => {
+        e.preventDefault();
+
+        if(isCtxMenuOpen)return closeCtxMenu(() => showContextMenuImage( photo, img, e ));
+        showContextMenuImage( photo, img, e );
+      }
 
       img.onload = () => {
         anime.set(div, { translateY: '10px' });
@@ -105,6 +135,256 @@ let authThread = async () => {
     loadingText.innerHTML = 'Failed to connect to Backend, Please restart the app.';
   }
 }
+
+let closeCtxMenu = ( cb = () => {} ) => {
+  if(!isCtxMenuOpen)return;
+  isCtxMenuOpen = false;
+
+  let menu = document.querySelector<HTMLElement>('.context-menu')!;
+
+  anime({
+    targets: '.context-menu-item',
+    opacity: 0,
+    delay: anime.stagger(10),
+    duration: 100,
+    easing: 'linear',
+    complete: () => {
+      menu.innerHTML = '';
+
+      anime({
+        targets: menu,
+        opacity: 0,
+        duration: 200,
+        easing: 'linear',
+        width: '0px',
+        complete: cb
+      })
+    },
+  })
+
+}
+
+let showContextMenuImage = ( photo: any, img: HTMLImageElement, e: MouseEvent ) => {
+  let menu = document.querySelector<HTMLElement>('.context-menu')!;
+  isCtxMenuOpen = true;
+
+  menu.style.display = 'block';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+
+  let menuItems: any = {
+    'Copy Image (Smol)': () => {
+      let canvas = document.createElement('canvas');
+      let ctx = canvas.getContext('2d');
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(( blob ) => {
+        navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': blob!
+          })
+        ]);
+
+        canvas.remove();
+      });
+    },
+    'Copy Image': () => {
+      let fullImage = document.createElement('img');
+      fullImage.crossOrigin = 'anonymous';
+      fullImage.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/full?key=' + localStorage.getItem('token')!;
+
+      fullImage.onload = () => {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+
+        canvas.width = fullImage.width;
+        canvas.height = fullImage.height;
+
+        ctx?.drawImage(fullImage, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(( blob ) => {
+          navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': blob!
+            })
+          ]);
+
+          canvas.remove();
+        });
+      }
+    },
+    'Open File Location': () => {
+      fetch('http://127.0.0.1:53413/api/v1/photos/'+photo.timestamp+'/open?key='+localStorage.getItem('token')!)
+    }
+  }
+
+  anime({
+    targets: menu,
+    opacity: 1,
+    duration: 200,
+    easing: 'linear',
+    width: '180px',
+    height: Object.keys(menuItems).length * 30 + 10 + 'px'
+  })
+
+  Object.keys(menuItems).forEach(item => {
+    let div = document.createElement('div');
+    div.onclick = () => {
+      menuItems[item]();
+      closeCtxMenu();
+    };
+
+    div.innerHTML = item;
+    div.classList.add('context-menu-item');
+
+    menu.appendChild(div);
+  })
+
+  anime({
+    targets: '.context-menu-item',
+    opacity: 1,
+    delay: anime.stagger(10, { start: 200 }),
+    duration: 100,
+    easing: 'linear',
+  })
+}
+
+let showPhotoUI = ( photo: any, img: HTMLElement ) => {
+  let c = img.parentElement!;
+  imgBoundingPos = img.getBoundingClientRect();
+
+  c.style.position = 'fixed';
+  c.style.top = imgBoundingPos.y + 'px';
+  c.style.left = imgBoundingPos.x + 'px';
+  c.style.zIndex = '9999';
+  c.style.display = 'block';
+  c.style.margin = '0px';
+
+  img.style.height = '100%';
+  img.style.width = '100%';
+
+  currentImage = img;
+  currentPhoto = photo;
+
+  let width = (photo.res[0] * ( window.innerHeight / photo.res[1] ));
+  let height = window.innerHeight;
+  let left = window.innerWidth / 2 - width / 2;
+  let top = 0;
+
+  if(width > window.innerWidth){
+    width = window.innerWidth;
+    height = (photo.res[1] * ( window.innerWidth / photo.res[0] ));
+    left = 0;
+    top = window.innerHeight / 2 - height / 2;
+  }
+
+  window.onresize = () => {
+    width = (photo.res[0] * ( window.innerHeight / photo.res[1] ));
+    height = window.innerHeight;
+    left = window.innerWidth / 2 - width / 2;
+
+    if(width > window.innerWidth){
+      width = window.innerWidth;
+      height = (photo.res[1] * ( window.innerWidth / photo.res[0] ));
+      left = 0;
+      top = window.innerHeight / 2 - height / 2;
+    }
+
+    if(enlargedImage){
+      enlargedImage.style.width = width + 'px';
+      enlargedImage.style.height = height + 'px';
+      enlargedImage.style.top = top + 'px';
+      enlargedImage.style.left = left + 'px';
+    }
+
+    anime({
+      targets: c,
+      width: width + 'px',
+      height: height + 'px',
+      filter: 'blur(10px)',
+      top: top,
+      left: left,
+      easing: 'linear',
+      duration: 50
+    })
+  }
+
+  anime({
+    targets: c,
+    width: width + 'px',
+    height: height + 'px',
+    filter: 'blur(10px)',
+    top: top,
+    left: left
+  })
+
+  let image = document.createElement('img');
+  image.style.position = 'fixed';
+
+  image.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/full?key=' + localStorage.getItem('token');
+  document.querySelector<HTMLElement>(".image-view")!.appendChild(image);
+
+  image.onload = () => {
+    document.querySelector<HTMLElement>(".image-view")!.style.display = 'block';
+    anime({
+      targets: '.image-view',
+      opacity: 1
+    })
+
+    enlargedImage = image;
+
+    enlargedImage.style.width = width + 'px';
+    enlargedImage.style.height = height + 'px';
+    enlargedImage.style.top = top + 'px';
+    enlargedImage.style.left = left + 'px';
+  }
+}
+
+document.querySelector<HTMLElement>('.image-close')!.onclick = () => {
+  window.onresize = () => {};
+
+  setTimeout(() => {
+    anime({
+      targets: '.image-view',
+      opacity: 0,
+      duration: 100,
+      easing: 'linear',
+      complete: () => {
+        document.querySelector<HTMLElement>('.image-view')!.style.display = 'none';
+  
+        let c = currentImage!.parentElement!;
+        let photo = currentPhoto!;
+  
+  
+        anime({
+          targets: c,
+          width: Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px',
+          height: '200px',
+          filter: 'blur(0px)',
+          easing: 'easeInOutQuad',
+          duration: 100,
+          top: imgBoundingPos!.y - 10,
+          left: imgBoundingPos!.x - 10,
+          margin: '10px',
+          complete: () => {
+            c.style.display = 'inline-block';
+            c.style.position = 'static';
+  
+            enlargedImage?.remove();
+            enlargedImage = null;
+  
+            currentImage = null;
+            currentPhoto = null;
+          }
+        })
+      }
+    })
+  }, 100);
+};
 
 let place = ( num: string ): string => {
   if(num.toString().endsWith('1') && !num.toString().endsWith('11')){

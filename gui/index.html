@@ -5,13 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VRC Photo Manager</title>
+
+    <script src="https://kit.fontawesome.com/9a203e5ff1.js" crossorigin="anonymous"></script>
   </head>
   <body>
     <div id="root">
       <div class="loading">Loading...</div>
 
+      <div class="image-view">
+        <div class="image-view-blackout"></div>
+        <div class="image-close"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+
+      <div class="context-menu"></div>
+
       <div class="image-container"></div>
     </div>
+
     <script type="module" src="/src/index.ts"></script>
   </body>
 </html>

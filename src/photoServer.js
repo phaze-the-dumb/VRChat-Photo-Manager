@@ -3,6 +3,7 @@ const fastify = require('fastify')();
 const { randomUUID } = require('crypto');
 const { PNGImage } = require('png-metadata');
 const mergeSort = require('./mergeSort');
+const { shell } = require('electron');
 const os = require('os');
 const sharp = require('sharp');
 
@@ -24,8 +25,6 @@ class Picture{
     this.date = getDate(this.name.replace('VRChat_', '').split('.')[0], this.name.split('.')[1].split('_')[0]);
     this.timestamp = this.date.getTime();
     this.res =  this.name.split('.')[1].split('_')[1].split('x').map(x => parseInt(x));
-
-    console.log('Found image: '+path);
   }
 }
 
@@ -143,12 +142,29 @@ fastify.register(async ( fastify ) => {
       .toBuffer()
       .then(buffer => reply.send(buffer));
   })
+
+  fastify.get('/api/v1/photos/:id/open', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+
+    let key = req.query.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key Header.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(inScan)return reply.send({ ok: true, message: 'Still Scanning Folders.' });
+
+    let image = pictures.find(x => x.timestamp == req.params.id)
+    if(!image)return reply.send({ ok: false, message: 'Image not found.' });
+
+    require('child_process').exec(`explorer.exe /select,"${image.path.replaceAll('/', '\\')}"`);
+    reply.send({ ok: true });
+  });
 })
 
 fastify.listen({ port: 53413, host: '127.0.0.1' });
 
 let startSpider = async (folder, pictures) => {
-  console.log('Starting Spider on ' + folder);
   let files = fs.readdirSync(folder);
 
   for(let file of files){

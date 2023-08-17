@@ -9,6 +9,19 @@ body{
   font-family: 'Rubik', sans-serif;
 }
 
+.image-view{
+  opacity: 0;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100000;
+}
+
+.image-view img {
+  z-index: 10001;
+}
+
 .group-title{
   color: white;
   font-size: 30px;
@@ -21,6 +34,38 @@ body{
   font-size: 20px;
 }
 
+.image-view-blackout{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 10000;
+}
+
+.image-close{
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  color: white;
+  font-size: 20px;
+  transition: 0.5s;
+  border-radius: 50px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 100001;
+}
+
+.image-close:hover{
+  background: #fff5;
+}
+
 .image-container{
   position: fixed;
   top: 50px;
@@ -29,15 +74,20 @@ body{
   height: calc(100% - 50px);
   overflow-x: hidden;
   overflow-y: auto;
+  text-align: center;
 }
 
 .image-wrapper{
   width: 200px;
   height: 200px;
-  background: radial-gradient(transparent, #00354e);
   margin: 10px;
   display: inline-block;
   opacity: 0;
+  cursor: pointer;
+}
+
+.image-wrapper img {
+  border-radius: 10px;
 }
 
 .loading{
@@ -65,6 +115,29 @@ body{
     #fff 30px 0 0,
     #fff -30px 0 0;
   animation: loading 2s linear infinite;
+}
+
+.context-menu{
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #4445;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  display: none;
+  opacity: 0;
+  z-index: 10000000000;
+  overflow: hidden;
+  height: 0;
+  box-shadow: #0005 0 0 10px;
+}
+
+.context-menu-item{
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  margin: 10px;
+  opacity: 0;
 }
 
 @keyframes loading {
