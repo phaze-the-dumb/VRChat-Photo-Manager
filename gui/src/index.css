@@ -200,7 +200,7 @@ body{
 
 .image-tray{
   background: #4445;
-  border-radius: 20px;
+  border-radius: 15px;
   backdrop-filter: blur(10px);
   position: fixed;
   bottom: 75px;
@@ -211,6 +211,65 @@ body{
   z-index: 1000001;
   opacity: 0;
   box-shadow: #0005 0 0 10px;
+  overflow: hidden;
+}
+
+.world-info{
+  text-align: center;
+  padding: 0 10px;
+}
+
+.world-info i{
+  margin-left: 20px;
+  cursor: pointer;
+  user-select: none;
+  cursor: pointer;
+  user-select: none;
+  color: #fff5;
+  transition: 0.1s;
+}
+
+.world-info i:hover{
+  color: #fff;
+}
+
+.world-image{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: -10;
+  filter: blur(10px);
+  opacity: 0.5;
+}
+
+.world-tags{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 10px;
+}
+
+.world-tag{
+  margin: 0 10px;
+  color: #fff5;
+  user-select: none;
+  transition: 0.1s;
+}
+
+.world-tag:hover{
+  color: #fff;
+}
+
+.world-title-char{
+  display: inline-block;
+}
+
+.scraper-watermark{
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  color: #fff3;
 }
 
 .warning{

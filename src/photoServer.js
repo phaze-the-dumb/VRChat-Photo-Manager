@@ -3,6 +3,7 @@ const fastify = require('fastify')();
 const { randomUUID } = require('crypto');
 const { PNGImage } = require('png-metadata');
 const mergeSort = require('./mergeSort');
+const worlds = require('vrchat-world-scraper');
 const { shell } = require('electron');
 const os = require('os');
 const sharp = require('sharp');
@@ -12,6 +13,8 @@ let keys = [];
 let keyRequests = [];
 let inScan = false;
 let pictures = [];
+
+let testModeDoNotEnableThis = false; // this allows any program to access the backend without being approved!
 
 if(!fs.existsSync('./config.json'))
   fs.writeFileSync('./config.json', '{"picFolders":["'+os.homedir().replaceAll('\\', '/')+'/Pictures/VRChat"]}');
@@ -68,6 +71,38 @@ fastify.register(async ( fastify ) => {
     reply.header('Access-Control-Allow-Origin', '*');
     reply.header('Access-Control-Allow-Headers', 'key');
 
+    reply.send("GET");
+  });
+
+  fastify.options('/api/v1/worlds/:id', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
+  fastify.options('/api/v1/openurl', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
+  fastify.get('/api/v1/openurl', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(req.query.url.startsWith('http://') || req.query.url.startsWith('https://'))
+      shell.openExternal(req.query.url);
+
     reply.send({ ok: true });
   });
 
@@ -104,7 +139,7 @@ fastify.register(async ( fastify ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
 
-    if(allowAuth.allow){
+    if(allowAuth.allow || testModeDoNotEnableThis){
       allowAuth.allow = false;
       return reply.send({ ok: true, waiting: false, orderID: null, key: genNewKey() });
     }
@@ -171,7 +206,39 @@ fastify.register(async ( fastify ) => {
 
     require('child_process').exec(`explorer.exe /select,"${image.path.replaceAll('/', '\\')}"`);
     reply.send({ ok: true });
-  });
+  })
+
+  fastify.get('/api/v1/worlds/:id', async ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key Header.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.cache/vrchat/worlds'))
+      fs.mkdirSync(os.homedir + '/AppData/Roaming/PhazeDev/.cache/vrchat/worlds', { recursive: true });
+
+    if(fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.cache/vrchat/worlds/' + req.params.id + '.json')){
+      let data = JSON.parse(fs.readFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.cache/vrchat/worlds/' + req.params.id + '.json', 'utf8'));
+
+      if(data.fetchedAt + 6.048e+8 < Date.now()){
+        let newData = await worlds.find(req.params.id);
+        if(!newData)return reply.send({ ok: false, message: 'World not found.' });
+
+        fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.cache/vrchat/worlds/' + req.params.id + '.json', JSON.stringify({ fetchedAt: Date.now(), data: newData }));
+        reply.send({ ok: true, data: newData });
+      } else
+        reply.send({ ok: true, data: data.data });
+    } else{
+      let newData = await worlds.find(req.params.id);
+      if(!newData)return reply.send({ ok: false, message: 'World not found.' });
+
+      fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.cache/vrchat/worlds/' + req.params.id + '.json', JSON.stringify({ fetchedAt: Date.now(), data: newData }));
+      reply.send({ ok: true, data: newData });
+    }
+  })
 })
 
 fastify.listen({ port: 53413, host: '127.0.0.1' });

@@ -1,8 +1,8 @@
 {
   "name": "vrcphotos",
-  "productName": "vrcphotos",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "version": "0.1.0",
+  "author": "_phaz",
+  "license": "MIT",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -11,26 +11,21 @@
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
   },
-  "keywords": [],
-  "author": {
-    "name": "phaze-the-dumb",
-    "email": "phaze@duck.com"
-  },
-  "license": "MIT",
   "dependencies": {
     "@fastify/websocket": "^8.2.0",
     "electron-squirrel-startup": "^1.0.0",
-    "fastify": "^4.20.0",
+    "fastify": "^4.21.0",
     "png-metadata": "github:phaze-the-dumb/png-metadata-lib",
-    "sharp": "^0.32.5"
+    "sharp": "^0.32.5",
+    "vrchat-world-scraper": "github:phaze-the-dumb/vrchat-world-scraper"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.2.1",
-    "@electron-forge/maker-deb": "^6.2.1",
-    "@electron-forge/maker-rpm": "^6.2.1",
-    "@electron-forge/maker-squirrel": "^6.2.1",
-    "@electron-forge/maker-zip": "^6.2.1",
-    "@electron-forge/plugin-auto-unpack-natives": "^6.2.1",
-    "electron": "25.3.1"
+    "@electron-forge/cli": "^6.0.5",
+    "@electron-forge/maker-deb": "^6.0.5",
+    "@electron-forge/maker-rpm": "^6.0.5",
+    "@electron-forge/maker-squirrel": "^6.0.5",
+    "@electron-forge/maker-zip": "^6.0.5",
+    "@electron-forge/plugin-auto-unpack-natives": "^6.3.0",
+    "electron": "23.0.0"
   }
 }
