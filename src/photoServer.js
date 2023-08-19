@@ -17,7 +17,7 @@ let pictures = [];
 let testModeDoNotEnableThis = false; // this allows any program to access the backend without being approved!
 
 if(!fs.existsSync('./config.json'))
-  fs.writeFileSync('./config.json', '{"picFolders":["'+os.homedir().replaceAll('\\', '/')+'/Pictures/VRChat"]}');
+  fs.writeFileSync('./config.json', '{}');
 
 let config = JSON.parse(fs.readFileSync('./config.json', 'utf-8'));
 
@@ -287,11 +287,11 @@ let scanFolders = async () => {
   inScan = true;
   pictures = [];
 
-  for(let folder of config.picFolders)
-    await startSpider(folder, pictures);
-
+  await startSpider(os.homedir() + '/Pictures/VRChat', pictures);
   mergeSort(pictures);
+
   inScan = false;
+  updateThread();
 }
 
 let getDate = ( str, ms ) => {
@@ -310,6 +310,70 @@ let findBestResolution = ( originalRes, height ) => {
 
   return [ Math.floor(originalRes[0] * sizeMultiplier), height ];
 };
+
+let updateThread = () => {
+  console.log('Watching image folder...');
+  let path = os.homedir() + '\\Pictures\\VRChat\\';
+  let lastImage = '';
+  let lastEvent = '';
+
+  let queue = [];
+  let queueRunning = false;
+
+  let runQueue = () => {
+    queueRunning = true;
+    let { event, file } = queue.shift();
+
+    switch(event){
+      case 'rename':
+        if(fs.existsSync(path + file)){
+          console.log(lastImage, file, lastEvent, 'added');
+          if(lastImage === file && lastEvent === 'added')return;
+
+          if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
+          let stat = fs.statSync(path + file);
+
+          setTimeout(() => {
+            let photo = new Picture(path + file, file.split('\\').pop(), stat);
+            pictures.splice(0, 0, photo);
+
+            console.log('New Photo Found: ' + file);
+            keys.forEach(k => k.socket.send(JSON.stringify({ type: 'new-photo', photo: photo })));
+          }, 50);
+
+          lastEvent = 'added';
+          lastImage = file;
+        } else{
+          console.log(lastImage, file, lastEvent, 'deleted');
+          if(lastImage === file && lastEvent === 'deleted')return;
+          if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
+
+          console.log('Photo Removed: ' + file);
+          let name = file.split('\\').pop();
+
+          pictures = pictures.filter(p => p.name !== name);
+          keys.forEach(k => k.socket.send(JSON.stringify({ type: 'photo-removed', id: getDate(name.replace('VRChat_', '').split('.')[0], name.split('.')[1].split('_')[0]).getTime() })));
+
+          lastEvent = 'deleted';
+          lastImage = file;
+        }
+    }
+
+    if(queue[0])
+      runQueue();
+    else
+      queueRunning = false;
+  }
+
+  fs.watch(path, { recursive: true }, ( event, file ) => {
+    if(!file)return;
+
+    queue.push({ event, file });
+
+    if(!queueRunning)
+      runQueue();
+  })
+}
 
 module.exports = { allowAuth };
 scanFolders();
