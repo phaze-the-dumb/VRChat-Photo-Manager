@@ -162,6 +162,9 @@ document.querySelector<HTMLElement>('.image-close')!.onclick = () => {
   
             currentImage = null;
             currentPhoto = null;
+
+            trayOpen = 'none';
+            document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
           }
         })
       }
