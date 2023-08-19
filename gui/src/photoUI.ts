@@ -162,6 +162,8 @@ document.querySelector<HTMLElement>('.image-close')!.onclick = () => {
   
             currentImage = null;
             currentPhoto = null;
+
+            trayOpen = 'none';
           }
         })
       }
