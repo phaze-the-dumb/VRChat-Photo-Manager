@@ -13,7 +13,7 @@ let setTray = ( tray: string ) =>
   trayOpen = tray;
 
 let showPhotoUI = ( photo: any, img: HTMLImageElement, index: number ) => {
-  console.log(photo);
+  console.log(photo, index);
 
   if(document.querySelector<HTMLElement>(".image-view")!.style.display === 'block')
     return;

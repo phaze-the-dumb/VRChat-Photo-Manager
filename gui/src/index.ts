@@ -17,6 +17,7 @@ let loadingText = document.querySelector<HTMLElement>('.loading')!;
 let photos: any = [];
 let imageContainer = document.querySelector<HTMLElement>('.image-container')!;
 let lastPhotoIndex = -1;
+let lastGroupDates: Array<string> = [];
 let currentGroupDate = "";
 let images: Array<HTMLImageElement> = [];
 
@@ -30,9 +31,11 @@ let loadAnotherImage = () => {
 
   lastPhotoIndex++;
   let photo = photos[lastPhotoIndex];
-  let index = lastPhotoIndex;
-
   if(!photo)return;
+
+  photo.index = lastPhotoIndex;
+  photo.getIndex = () => photo.index;
+
   let date = new Date(photo.timestamp);
 
   if(currentGroupDate != date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear()) {
@@ -49,6 +52,8 @@ let loadAnotherImage = () => {
     })
 
     imageContainer.appendChild(title);
+
+    lastGroupDates.push(date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear());
     currentGroupDate = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
   }
 
@@ -59,7 +64,6 @@ let loadAnotherImage = () => {
 
   imageContainer.appendChild(div);
   div.appendChild(img);
-  imageContainer.appendChild(div);
   images.push(img);
 
   div.style.height = '200px';
@@ -68,7 +72,7 @@ let loadAnotherImage = () => {
   div.onclick = () => {
     if(isCtxMenuOpen)return closeCtxMenu();
 
-    showPhotoUI( photo, img, index );
+    showPhotoUI( photo, img, photo.getIndex() );
   }
 
   div.oncontextmenu = ( e ) => {
@@ -136,7 +140,116 @@ let authThread = async () => {
     }
 
     ws.onmessage = (e) => {
-      console.log(e.data);
+      let msg = JSON.parse(e.data);
+
+      switch(msg.type){
+        case 'new-photo':
+          console.log(msg.photo);
+
+          photos.forEach(( p: any ) => {
+            if(p.index !== undefined)
+              p.index++;
+          })
+
+          photos.splice(0, 0, msg.photo);
+
+          let div = document.createElement('div');
+          div.className = 'image-wrapper';
+
+          lastPhotoIndex++;
+
+          let photo = photos[0];
+          if(!photo)return;
+
+          photo.index = 0;
+          photo.getIndex = () => photo.index;
+
+          let date = new Date(photo.timestamp);
+
+          if(lastGroupDates[0] != date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear()) {
+            let title = document.createElement('div');
+            title.className = 'group-title';
+            title.innerHTML = days[date.getDay()] + ' ' + date.getDate() + '<sup class="smol-date">'+place(date.getDate().toString())+'</sup> ' + months[date.getMonth()] + ' <span class="smol-date">' + date.getFullYear() + "</span>";
+
+            anime({
+              targets: title,
+              opacity: 1,
+              duration: 500,
+              easing: 'linear',
+              translateY: '0px'
+            })
+
+            imageContainer.insertBefore(title, imageContainer.childNodes[0]);
+
+            lastGroupDates.splice(0, 0, date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear());
+            currentGroupDate = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
+          }
+        
+          let img = document.createElement('img');
+          img.crossOrigin = 'anonymous';
+          img.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/scaled?key=' + localStorage.getItem('token')!;
+          img.draggable = false;
+        
+          imageContainer.insertBefore(div, imageContainer.childNodes[1]);
+          div.appendChild(img)
+          images.splice(0, 0, img);
+
+          div.style.height = '200px';
+          div.style.width = Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px';
+        
+          div.onclick = () => {
+            if(isCtxMenuOpen)return closeCtxMenu();
+        
+            showPhotoUI( photo, img, photo.getIndex() );
+          }
+        
+          div.oncontextmenu = ( e ) => {
+            e.preventDefault();
+        
+            if(isCtxMenuOpen)return closeCtxMenu(() => showContextMenuImage( photo, img, e ));
+            showContextMenuImage( photo, img, e );
+          }
+
+          img.onload = () => {
+            anime.set(div, { translateY: '10px' });
+            anime({
+              targets: div,
+              opacity: 1,
+              duration: 500,
+              easing: 'linear',
+              translateY: '0px'
+            })
+          }
+
+          break;
+        case 'photo-removed':
+          console.log('Removing photo: '+msg.id);
+          let p = photos.find(( p: any ) => p.timestamp === msg.id);
+          if(!p)return;
+
+          let index = photos.indexOf(p);
+
+          photos.forEach(( ph: any, i: number ) => {
+            if(ph.index !== undefined && i > index)
+              ph.index--;
+          })
+
+          if(
+            images[index].parentElement!.previousElementSibling!.classList.contains('group-title') &&
+            images[index].parentElement!.nextElementSibling!.classList.contains('group-title')
+          ){
+            console.log('Removing group title');
+            images[index].parentElement!.previousSibling!.remove();
+
+            lastGroupDates.shift();
+            currentGroupDate = lastGroupDates[lastGroupDates.length - 1];
+          }
+
+          images[index].parentElement!.remove();
+          photos = photos.filter(( p: any ) => p.timestamp !== msg.id);
+
+          break;
+      }
     }
   } else{
     loadingText.innerHTML = 'Failed to connect to Backend, Please restart the app.';
