@@ -13,8 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Do the funky linux stuff
+        run: sudo dpkg --add-architecture i386  && sudo apt  update
+
       - name: Install Wine
-        run: sudo apt install wine32
+        run: apt-get install wine32
 
       - name: Setup node
         uses: actions/setup-node@v3
