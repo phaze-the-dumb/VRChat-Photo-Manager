@@ -7,7 +7,7 @@
   "scripts": {
     "start": "SET APP_DEV=true && electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder && yarn --cwd gui build && copy -R gui/dist/ dist/win-unpacked/ui"
+    "dist": "electron-builder"
   },
   "dependencies": {
     "@fastify/websocket": "^8.2.0",

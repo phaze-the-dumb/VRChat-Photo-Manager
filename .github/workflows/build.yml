@@ -1,1 +1,42 @@
+name: 'Build App'
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.17.x
+          cache: npm
+
+      - name: Install Deps
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Build Electron App
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: dist
+
+      - name: Install UI Deps
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+          dir: gui
+
+      - name: Build UI
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
+          dir: gui
+
+      - name: Copy UI Into Build Folder
+        run: cp gui/dist/* dist/win-unpacked/ui
