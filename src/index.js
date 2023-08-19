@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require('electron');
+const path = require('path');
 
 let photo = require('./photoServer');
 
@@ -11,7 +12,13 @@ app.on('ready', () => {
   });
 
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadURL('http://localhost:5173/');
+
+  console.log(process.env);
+
+  if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
+    mainWindow.loadURL('http://localhost:5173/');
+  else
+    mainWindow.loadFile(path.join(__dirname, './gui/dist/index.html'));
 
   mainWindow.webContents.on('did-start-navigation', () => photo.allowAuth.allow = true);
 });

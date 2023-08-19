@@ -5,7 +5,7 @@
   "license": "MIT",
   "main": "src/index.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "SET APP_DEV=true && electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
