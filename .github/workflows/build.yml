@@ -53,11 +53,11 @@ jobs:
       - name: Copy UI Into Build Folder
         run: cp -r gui/dist/* dist/win-unpacked/ui
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: dist
+      # - name: Upload Artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: build
+      #     path: dist
 
       - name: Get Version
         id: package-version
@@ -77,7 +77,7 @@ jobs:
       - name: Zip Build Folder
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r build.zip dist
+          args: zip -qq -r build.zip dist/win-unpacked
 
       - uses: actions/upload-release-asset@v1.0.1
         env:
