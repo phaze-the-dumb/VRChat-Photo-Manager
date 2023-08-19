@@ -164,6 +164,7 @@ document.querySelector<HTMLElement>('.image-close')!.onclick = () => {
             currentPhoto = null;
 
             trayOpen = 'none';
+            document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
           }
         })
       }
