@@ -59,8 +59,8 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          type: '7z'
-          filename: 'build.7z'
+          type: 'tar'
+          filename: 'build.tar.gz'
           path: dist/win-unpacked
 
       - name: Upload Build
@@ -69,6 +69,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build.zip
-          asset_name: ${{ steps.extract_version.outputs.version }}-Release.zip
+          asset_path: ./build.tar.gz
+          asset_name: ${{ steps.extract_version.outputs.version }}-release.tar.gz
           asset_content_type: application/zip

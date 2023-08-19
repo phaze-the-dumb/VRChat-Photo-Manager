@@ -1,10 +1,11 @@
 import anime from 'animejs';
+import { bytesToFormatted } from '../utils';
 
-let regButton = ( setTray: Function, trayOpen: () => string ) => {
-  document.querySelector<HTMLElement>('#image-share-button')!.onclick = () => {
+let regButton = ( setTray: Function, trayOpen: () => string, currentPhoto: () => any ) => {
+  document.querySelector<HTMLElement>('#image-stats-button')!.onclick = () => {
     console.log('Share button Clicked');
 
-    if(trayOpen() === 'share'){
+    if(trayOpen() === 'stats'){
       anime({
         targets: '.image-tray',
         opacity: 0,
@@ -21,6 +22,15 @@ let regButton = ( setTray: Function, trayOpen: () => string ) => {
       return;
     }
 
+    let photo = currentPhoto();
+
+    let text = `
+    File Name: ${photo.name}<br />
+    Image Resolution: ${photo.res[0]} x ${photo.res[1]}px<br />
+    File Size: ${bytesToFormatted(photo.stat.size, 0)}`;
+
+    console.log(photo.stat);
+
     if(trayOpen() !== 'none') {
       anime({
         targets: '.image-tray',
@@ -29,7 +39,7 @@ let regButton = ( setTray: Function, trayOpen: () => string ) => {
         easing: 'linear',
         duration: 300,
         complete: () => {
-          document.querySelector('.image-tray')!.innerHTML = 'share';
+          document.querySelector('.image-tray')!.innerHTML = text;
 
           anime.set('.image-tray', { translateX: '-50%', translateY: '-50px' });
           anime({
@@ -38,11 +48,11 @@ let regButton = ( setTray: Function, trayOpen: () => string ) => {
             translateY: 0,
           })
 
-          setTray('share');
+          setTray('stats');
         }
       })
     } else{
-      document.querySelector('.image-tray')!.innerHTML = 'share';
+      document.querySelector('.image-tray')!.innerHTML = text;
       document.querySelector<HTMLElement>('.image-tray')!.style.display = 'flex';
 
       anime.set('.image-tray', { translateX: '-50%', translateY: '-50px' });
@@ -52,7 +62,7 @@ let regButton = ( setTray: Function, trayOpen: () => string ) => {
         translateY: 0,
       })
 
-      setTray('share');
+      setTray('stats');
     }
   };
 }

@@ -9,6 +9,10 @@ body{
   font-family: 'Rubik', sans-serif;
 }
 
+img{
+  user-select: none;
+}
+
 .image-view{
   opacity: 0;
   display: none;
@@ -70,6 +74,54 @@ body{
 
 .image-controls-button:hover{
   background: #fff5;
+}
+
+.next-image-button{
+  position: fixed;
+  top: 50%;
+  right: 0;
+  color: white;
+  font-size: 20px;
+  transition: 0.1s;
+  border-radius: 20px 0 0 20px;
+  width: 50px;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 100001;
+  transform: translate(0, -50%);
+}
+
+.next-image-button:hover{
+  background: #fff5;
+  backdrop-filter: blur(10px);
+}
+
+.prev-image-button{
+  position: fixed;
+  top: 50%;
+  left: 0;
+  color: white;
+  font-size: 20px;
+  transition: 0.1s;
+  border-radius: 0 20px 20px 0;
+  width: 50px;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 100001;
+  transform: translate(0, -50%);
+}
+
+.prev-image-button:hover{
+  background: #fff5;
+  backdrop-filter: blur(10px);
 }
 
 .image-close{

@@ -6,13 +6,17 @@ let enlargedImage: null | HTMLImageElement = null;
 let imgBoundingPos: null | DOMRect = null;
 let currentImage: null | HTMLImageElement = null;
 let currentPhoto: any = null;
+let currentPhotoIndex = -1;
 let trayOpen = 'none';
 
 let setTray = ( tray: string ) =>
   trayOpen = tray;
 
-let showPhotoUI = ( photo: any, img: HTMLImageElement ) => {
+let showPhotoUI = ( photo: any, img: HTMLImageElement, index: number ) => {
   console.log(photo);
+
+  if(document.querySelector<HTMLElement>(".image-view")!.style.display === 'block')
+    return;
 
   let c = img.parentElement!;
   imgBoundingPos = img.getBoundingClientRect();
@@ -35,6 +39,7 @@ let showPhotoUI = ( photo: any, img: HTMLImageElement ) => {
 
   currentImage = img;
   currentPhoto = photo;
+  currentPhotoIndex = index;
 
   let width = (photo.res[0] * ( window.innerHeight / photo.res[1] ));
   let height = window.innerHeight;
@@ -79,13 +84,27 @@ let showPhotoUI = ( photo: any, img: HTMLImageElement ) => {
     })
   }
 
+  let nav = document.querySelector<HTMLElement>(".nav-bar")!;
+  anime({
+    target: ".nav-bar",
+    top: '-50px',
+    duration: 200,
+    update: ( anim ) => {
+      nav.style.top = '-' + anim.progress * 0.5 + 'px';
+    }
+  })
+
   anime({
     targets: c,
     width: width + 'px',
     height: height + 'px',
     filter: 'blur(10px)',
     top: top,
-    left: left
+    left: left,
+    duration: 400,
+    complete: () => {
+      console.log('Made Image Bigger');
+    }
   })
 
   let image = document.createElement('img');
@@ -98,14 +117,20 @@ let showPhotoUI = ( photo: any, img: HTMLImageElement ) => {
   }
 
   image.crossOrigin = 'anonymous';
-  image.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/full?key=' + localStorage.getItem('token');
+  image.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/hd?key=' + localStorage.getItem('token');
   document.querySelector<HTMLElement>(".image-view")!.appendChild(image);
 
   image.onload = () => {
+    console.log('Loaded Higher Res Image');
+
     document.querySelector<HTMLElement>(".image-view")!.style.display = 'block';
     anime({
       targets: '.image-view',
-      opacity: 1
+      opacity: 1,
+      duration: 100,
+      complete: () => {
+        console.log('Shown Image View')
+      }
     })
 
     enlargedImage = image;
@@ -117,7 +142,7 @@ let showPhotoUI = ( photo: any, img: HTMLImageElement ) => {
   }
 }
 
-document.querySelector<HTMLElement>('.image-close')!.onclick = () => {
+let closeImageUI = () => {
   window.onresize = () => {};
 
   if(trayOpen !== 'none') {
@@ -130,46 +155,68 @@ document.querySelector<HTMLElement>('.image-close')!.onclick = () => {
     })
   }
 
-  setTimeout(() => {
-    anime({
-      targets: '.image-view',
-      opacity: 0,
-      duration: 100,
-      easing: 'linear',
-      complete: () => {
-        document.querySelector<HTMLElement>('.image-view')!.style.display = 'none';
-  
-        let c = currentImage!.parentElement!;
-        let photo = currentPhoto!;
+  anime({
+    targets: '.image-view',
+    opacity: 0,
+    duration: 100,
+    easing: 'linear',
+    complete: () => {
+      console.log('Hidden Image View');
+      document.querySelector<HTMLElement>('.image-view')!.style.display = 'none';
 
-  
-        anime({
-          targets: c,
-          width: Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px',
-          height: '200px',
-          filter: 'blur(0px)',
-          easing: 'easeInOutQuad',
-          duration: 100,
-          top: imgBoundingPos!.y - 10,
-          left: imgBoundingPos!.x - 10,
-          margin: '10px',
-          complete: () => {
-            c.style.display = 'inline-block';
-            c.style.position = 'static';
+      let c = currentImage!.parentElement!;
+      let photo = currentPhoto!;
 
-            enlargedImage?.remove();
-            enlargedImage = null;
-  
-            currentImage = null;
-            currentPhoto = null;
+      document.querySelector<HTMLElement>('.image-view')!.querySelectorAll('img').forEach( ( img: HTMLImageElement ) => { img.remove(); } );
+      enlargedImage = null;
 
-            trayOpen = 'none';
-            document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
-          }
-        })
-      }
-    })
-  }, 100);
+      anime({
+        targets: c,
+        width: Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px',
+        height: '200px',
+        filter: 'blur(0px)',
+        easing: 'easeInOutQuad',
+        duration: 100,
+        top: imgBoundingPos!.y - 10,
+        left: imgBoundingPos!.x - 10,
+        margin: '10px',
+        complete: () => {
+          console.log('Made image smaller');
+
+          c.style.display = 'inline-block';
+          c.style.position = 'static';
+
+          currentImage = null;
+          currentPhoto = null;
+          currentPhotoIndex = -1;
+
+          trayOpen = 'none';
+          document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
+
+          let nav = document.querySelector<HTMLElement>(".nav-bar")!;
+          anime({
+            target: '.nav-bar',
+            top: '0px',
+            duration: 200,
+            update: ( anim ) => {
+              nav.style.top = (anim.progress * 0.5) - 50 + 'px';
+            }
+          })
+
+          anime.set(c, {
+            width: Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px',
+            height: '200px',
+            filter: 'blur(0px)',
+            margin: '10px'
+          })
+        }
+      })
+    }
+  })
 };
 
-export { showPhotoUI, currentImage, currentPhoto, enlargedImage, imgBoundingPos, trayOpen, setTray };
+let getPhotoIndex = () => currentPhotoIndex;
+
+document.querySelector<HTMLElement>('.image-close')!.onclick = () => closeImageUI();
+
+export { showPhotoUI, currentImage, currentPhoto, enlargedImage, imgBoundingPos, trayOpen, setTray, getPhotoIndex, closeImageUI };
