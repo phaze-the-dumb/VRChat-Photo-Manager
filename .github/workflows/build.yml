@@ -53,6 +53,10 @@ jobs:
       #     name: build
       #     path: dist
 
+  upload:
+    runs-on: windows-latest
+
+    steps:
       - name: Get Version
         id: extract_version
         uses: Saionaro/extract-package-version@v1.2.1
