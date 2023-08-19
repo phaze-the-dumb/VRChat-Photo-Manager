@@ -27,9 +27,7 @@
     "win": {
       "target": "portable",
       "files": [
-        "src/index.js",
-        "src/mergeSort.js",
-        "src/photoServer.js"
+        "src/*"
       ]
     }
   }
