@@ -22,9 +22,10 @@ if(!fs.existsSync('./config.json'))
 let config = JSON.parse(fs.readFileSync('./config.json', 'utf-8'));
 
 class Picture{
-  constructor(path, name){
+  constructor(path, name, stat){
     this.path = path;
     this.name = name;
+    this.stat = stat;
     this.date = getDate(this.name.replace('VRChat_', '').split('.')[0], this.name.split('.')[1].split('_')[0]);
     this.timestamp = this.date.getTime();
     this.res =  this.name.split('.')[1].split('_')[1].split('x').map(x => parseInt(x));
@@ -168,6 +169,28 @@ fastify.register(async ( fastify ) => {
     reply.send(fs.readFileSync(image.path));
   })
 
+  fastify.get('/api/v1/photos/:id/hd', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+
+    let key = req.query.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key Header.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(inScan)return reply.send({ ok: true, message: 'Still Scanning Folders.' });
+
+    let image = pictures.find(x => x.timestamp == req.params.id)
+    if(!image)return reply.send({ ok: false, message: 'Image not found.' });
+
+    reply.header('Content-Type', 'image/png');
+
+    sharp(fs.readFileSync(image.path))
+      .resize(...findBestResolution(image.res, 1080))
+      .toBuffer()
+      .then(buffer => reply.send(buffer));
+  })
+
   fastify.get('/api/v1/photos/:id/scaled', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -185,7 +208,7 @@ fastify.register(async ( fastify ) => {
     reply.header('Content-Type', 'image/png');
 
     sharp(fs.readFileSync(image.path))
-      .resize(...findBestResolution(image.res))
+      .resize(...findBestResolution(image.res, 200))
       .toBuffer()
       .then(buffer => reply.send(buffer));
   })
@@ -256,7 +279,7 @@ let startSpider = async (folder, pictures) => {
     if(stat.isDirectory())
       await startSpider(path, pictures);
     else if(file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))
-      pictures.push(new Picture(path, file));
+      pictures.push(new Picture(path, file, stat));
   }
 }
 
@@ -282,10 +305,10 @@ let getDate = ( str, ms ) => {
   return date;
 }
 
-let findBestResolution = ( originalRes ) => {
-  let sizeMultiplier = 200 / originalRes[1];
+let findBestResolution = ( originalRes, height ) => {
+  let sizeMultiplier = height / originalRes[1];
 
-  return [ Math.floor(originalRes[0] * sizeMultiplier), 200 ];
+  return [ Math.floor(originalRes[0] * sizeMultiplier), height ];
 };
 
 module.exports = { allowAuth };
