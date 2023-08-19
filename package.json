@@ -5,27 +5,27 @@
   "license": "MIT",
   "main": "src/index.js",
   "scripts": {
-    "start": "SET APP_DEV=true && electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "start": "SET APP_DEV=true && electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder && yarn --cwd gui build && copy -R gui/dist/ dist/win-unpacked/ui"
   },
   "dependencies": {
     "@fastify/websocket": "^8.2.0",
-    "electron-squirrel-startup": "^1.0.0",
     "fastify": "^4.21.0",
     "png-metadata": "github:phaze-the-dumb/png-metadata-lib",
     "sharp": "^0.32.5",
     "vrchat-world-scraper": "github:phaze-the-dumb/vrchat-world-scraper"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.5",
-    "@electron-forge/maker-deb": "^6.0.5",
-    "@electron-forge/maker-rpm": "^6.0.5",
-    "@electron-forge/maker-squirrel": "^6.0.5",
-    "@electron-forge/maker-zip": "^6.0.5",
-    "@electron-forge/plugin-auto-unpack-natives": "^6.3.0",
-    "electron": "23.0.0"
+    "electron": "23.0.0",
+    "electron-builder": "^24.6.3"
+  },
+  "build": {
+    "appId": "xyz.phazed.vrcphotos",
+    "productName": "VRChat Photo Manager",
+    "copyright": "Made with ❤️ by _phaz",
+    "win": {
+      "target": "portable"
+    }
   }
 }
