@@ -59,8 +59,8 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          type: 'zip'
-          filename: 'build.zip'
+          type: '7z'
+          filename: 'build.7z'
           path: dist/win-unpacked
 
       - name: Upload Build
