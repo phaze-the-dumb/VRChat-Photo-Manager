@@ -17,7 +17,7 @@ jobs:
         run: sudo dpkg --add-architecture i386  && sudo apt  update
 
       - name: Install Wine
-        run: apt-get install wine32
+        run: sudo apt-get install wine32
 
       - name: Setup node
         uses: actions/setup-node@v3
