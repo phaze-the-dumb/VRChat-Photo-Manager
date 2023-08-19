@@ -53,11 +53,6 @@ jobs:
       #     name: build
       #     path: dist
 
-  upload:
-    runs-on: windows-latest
-    needs: build
-
-    steps:
       - name: Get Version
         id: extract_version
         uses: Saionaro/extract-package-version@v1.2.1
@@ -77,6 +72,12 @@ jobs:
         uses: montudor/action-zip@v1
         with:
           args: zip -qq -r build.zip dist/win-unpacked
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'zip'
+          filename: 'build.zip'
 
       - uses: actions/upload-release-asset@v1.0.1
         env:
