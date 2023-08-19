@@ -54,8 +54,8 @@ jobs:
       #     path: dist
 
       - name: Get Version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        id: extract_version
+        uses: Saionaro/extract-package-version@v1.2.1
 
       - name: Create Draft Release
         id: create_release
@@ -63,8 +63,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          tag_name: ${{ steps.package-version.outputs.current-version}}
-          release_name: ${{ steps.package-version.outputs.current-version}} Release
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: ${{ steps.extract_version.outputs.version }} Release
           draft: true
           prerelease: false
 
