@@ -55,6 +55,7 @@ jobs:
 
   upload:
     runs-on: windows-latest
+    needs: build
 
     steps:
       - name: Get Version
