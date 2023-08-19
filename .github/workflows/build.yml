@@ -58,3 +58,32 @@ jobs:
         with:
           name: build
           path: dist
+
+      - name: Get Version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
+
+      - name: Create Draft Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.package-version.outputs.current-version}}
+          release_name: ${{ steps.package-version.outputs.current-version}} Release
+          draft: true
+          prerelease: false
+
+      - name: Zip Build Folder
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r build.zip dist
+
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build.zip
+          asset_name: ${{ steps.package-version.outputs.current-version}}-Release.zip
+          asset_content_type: application/zip
