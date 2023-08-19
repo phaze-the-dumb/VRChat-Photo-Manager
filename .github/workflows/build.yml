@@ -7,17 +7,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Do the funky linux stuff
-        run: sudo dpkg --add-architecture i386  && sudo apt update
-
-      - name: Install Wine
-        run: sudo apt-get install wine32
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -51,7 +45,7 @@ jobs:
         run: mkdir dist/win-unpacked/ui
 
       - name: Copy UI Into Build Folder
-        run: cp -r gui/dist/* dist/win-unpacked/ui
+        run: copy -R gui/dist dist/win-unpacked/ui
 
       # - name: Upload Artifacts
       #   uses: actions/upload-artifact@v3
