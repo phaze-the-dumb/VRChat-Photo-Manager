@@ -28,7 +28,8 @@
       "target": "portable",
       "files": [
         "src/*",
-        "gui/dist/*"
+        "ui/*",
+        "ui/assets/*"
       ]
     }
   }

@@ -4,7 +4,9 @@ export default defineConfig({
   plugins: [],
   build: {
     cssMinify: 'lightningcss',
-    minify: 'terser'
+    minify: 'terser',
+    outDir: '../ui',
+    emptyOutDir: true
   },
   base: './'
 })
