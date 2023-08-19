@@ -47,5 +47,14 @@ jobs:
           cmd: build
           dir: gui
 
+      - name: Create UI Folder mkdir dist/win-unpacked/ui
+        run: cp gui/dist/* dist/win-unpacked/ui
+
       - name: Copy UI Into Build Folder
         run: cp gui/dist/* dist/win-unpacked/ui
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: dist
