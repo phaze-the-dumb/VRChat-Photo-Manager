@@ -241,7 +241,10 @@ fastify.register(async ( fastify ) => {
   })
 })
 
-fastify.listen({ port: 53413, host: '127.0.0.1' });
+fastify.listen({ port: 53413, host: '127.0.0.1' }, ( err, address ) => {
+  if(err)
+    throw new Error("App already running.");
+});
 
 let startSpider = async (folder, pictures) => {
   let files = fs.readdirSync(folder);
