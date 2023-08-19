@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
-let photo = require('./photoServer');
+let photo = require('./photoServer.js');
 
 app.on('ready', () => {
   let mainWindow = new BrowserWindow({
@@ -10,8 +10,6 @@ app.on('ready', () => {
   });
 
   mainWindow.setMenuBarVisibility(false);
-
-  console.log(process.env);
 
   if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
     mainWindow.loadURL('http://localhost:5173/');
@@ -22,6 +20,5 @@ app.on('ready', () => {
 });
 
 app.on('window-all-closed', () => {
-  if(process.platform !== 'darwin')
-    app.quit();
+  app.quit();
 });

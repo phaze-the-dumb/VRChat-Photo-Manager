@@ -1,6 +1,6 @@
 {
   "name": "vrcphotos",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "author": "_phaz",
   "license": "MIT",
   "main": "src/index.js",
@@ -25,7 +25,12 @@
     "productName": "VRChat Photo Manager",
     "copyright": "Made with ❤️ by _phaz",
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "files": [
+        "src/index.js",
+        "src/mergeSort.js",
+        "src/photoServer.js"
+      ]
     }
   }
 }
