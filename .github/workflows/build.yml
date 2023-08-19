@@ -24,11 +24,6 @@ jobs:
         with:
           cmd: install
 
-      - name: Build Electron App
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: dist
-
       - name: Install UI Deps
         uses: borales/actions-yarn@v4
         with:
@@ -41,17 +36,10 @@ jobs:
           cmd: build
           dir: gui
 
-      - name: Create UI Folder
-        run: mkdir dist/win-unpacked/ui
-
-      - name: Copy UI Into Build Folder
-        run: copy -R gui/dist dist/win-unpacked/ui
-
-      # - name: Upload Artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: build
-      #     path: dist
+      - name: Build Electron App
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: dist
 
       - name: Get Version
         id: extract_version

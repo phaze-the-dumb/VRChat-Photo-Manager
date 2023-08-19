@@ -27,7 +27,8 @@
     "win": {
       "target": "portable",
       "files": [
-        "src/*"
+        "src/*",
+        "gui/dist/*"
       ]
     }
   }
