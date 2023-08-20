@@ -28,7 +28,7 @@ let regButton = ( setTray: Function, trayOpen: () => string, currentPhoto: () =>
     let formattedName = currentPhoto().VRCXData.world.name.split('');
 
     for(let char in formattedName)
-      formattedName[char] = '<div class="world-title-char">'+formattedName[char]+'</div>';
+      formattedName[char] = '<div class="world-title-char">'+formattedName[char].replace(' ', '&nbsp;')+'</div>';
 
     let text = `
       <div class="world-info">${formattedName.join('')} <i id="open-world-page" class="fa-solid fa-arrow-up-right-from-square"></i></div>`

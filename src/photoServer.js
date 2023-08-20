@@ -83,6 +83,14 @@ fastify.register(async ( fastify ) => {
     reply.send("GET");
   });
 
+  fastify.options('/api/v1/photos/:id/delete', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
   fastify.options('/api/v1/openurl', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -228,6 +236,22 @@ fastify.register(async ( fastify ) => {
     if(!image)return reply.send({ ok: false, message: 'Image not found.' });
 
     require('child_process').exec(`explorer.exe /select,"${image.path.replaceAll('/', '\\')}"`);
+    reply.send({ ok: true });
+  })
+
+  fastify.get('/api/v1/photos/:id/delete', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key Header.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    let photo = pictures.find(x => x.timestamp == req.params.id);
+    if(!photo)return reply.send({ ok: false, message: 'Image not found.' });
+
+    fs.unlinkSync(photo.path);
     reply.send({ ok: true });
   })
 
