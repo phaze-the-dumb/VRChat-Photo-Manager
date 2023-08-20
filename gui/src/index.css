@@ -342,6 +342,38 @@ img{
   width: calc(100% - 50px);
 }
 
+.delete-confirm-button{
+  display: inline-block;
+  padding: 10px;
+  width: calc(50% - 5px);
+  text-align: center;
+  background: #f005;
+  border-radius: 50px;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.1s;
+}
+
+.delete-deny-button{
+  display: inline-block;
+  padding: 10px;
+  width: calc(50% - 5px);
+  text-align: center;
+  background: #fff2;
+  border-radius: 50px;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.1s;
+}
+
+.delete-confirm-button:hover{
+  background: #f00;
+}
+
+.delete-deny-button:hover{
+  background: #0cf5;
+}
+
 @keyframes loading {
   0% {
     transform: translate(0, -10px) scale(1, 1);

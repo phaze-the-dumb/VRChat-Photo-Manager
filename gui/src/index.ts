@@ -12,6 +12,7 @@ import infoButton from './photoUI/info';
 import prevButton from './photoUI/prev';
 import nextButton from './photoUI/next';
 import statsButton from './photoUI/stats';
+import deleteButton from './photoUI/delete';
 
 let loadingText = document.querySelector<HTMLElement>('.loading')!;
 let photos: any = [];
@@ -248,6 +249,9 @@ let authThread = async () => {
           images[index].parentElement!.remove();
           photos = photos.filter(( p: any ) => p.timestamp !== msg.id);
 
+          if(currentPhoto && msg.id === currentPhoto.timestamp)
+            closeImageUI();
+
           break;
       }
     }
@@ -260,6 +264,7 @@ copyButton.regButton(() => enlargedImage!);
 shareButton.regButton(setTray, () => trayOpen);
 warningsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 infoButton.regButton(setTray, () => trayOpen, () => currentPhoto);
+deleteButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 statsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 prevButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI);
 nextButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI, loadAnotherImage);
