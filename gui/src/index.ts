@@ -14,6 +14,9 @@ import nextButton from './photoUI/next';
 import statsButton from './photoUI/stats';
 import deleteButton from './photoUI/delete';
 
+import { getCurrentTab } from './tabs';
+import './settings';
+
 let loadingText = document.querySelector<HTMLElement>('.loading')!;
 let photos: any = [];
 let imageContainer = document.querySelector<HTMLElement>('.image-container')!;
@@ -27,6 +30,8 @@ setTimeout(() => {
 }, 100);
 
 let loadAnotherImage = () => {
+  if(getCurrentTab() !== 'photos')return;
+
   let div = document.createElement('div');
   div.className = 'image-wrapper';
 
@@ -130,7 +135,7 @@ let authThread = async () => {
 
           anime({
             targets: '.nav-bar',
-            background: '#444',
+            opacity: 1,
             easing: 'linear',
             duration: 500
           })

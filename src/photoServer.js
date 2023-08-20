@@ -16,11 +16,6 @@ let pictures = [];
 
 let testModeDoNotEnableThis = false; // this allows any program to access the backend without being approved!
 
-if(!fs.existsSync('./config.json'))
-  fs.writeFileSync('./config.json', '{}');
-
-let config = JSON.parse(fs.readFileSync('./config.json', 'utf-8'));
-
 class Picture{
   constructor(path, name, stat){
     this.path = path;

@@ -12,7 +12,23 @@
     <div id="root">
       <div class="loading">Loading...</div>
 
-      <div class="nav-bar"></div>
+      <div class="nav-bar">
+        <div class="nav-container">
+          <div class="nav-tab nav-tab-selected" id="photos-tab">Photos</div>
+        </div>
+
+        <div class="nav-user">
+          <!-- <div class="user-pfp"></div> -->
+          <div class="user-dropdown-button">
+            <i class="fa-solid fa-caret-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="user-dropdown">
+
+      </div>
+
       <div class="notification-copy">Image Copied to Clipboard</div>
 
       <div class="image-view">
@@ -36,6 +52,38 @@
 
       <div class="context-menu"></div>
       <div class="image-container"></div>
+
+      <div class="settings-container">
+        <div class="settings-sidebar">
+          <div class="sidebar-highlight"></div>
+          <div class="sidebar-label" id="settings-account-tab">Account Settings</div>
+          <div class="sidebar-label" id="settings-program-tab">Program Settings</div>
+        </div>
+
+        <div class="settings-main">
+          <div class="settings-account">
+            <div class="account-info">
+              <div id="account-loggedin">
+                <div class="account-name">Loading...</div><br />
+
+                <span id="current-storage-used">4GB</span>
+                <div class="storage-bar"></div>
+                <span id="total-storage-available">10GB</span>
+              </div>
+              <div id="account-loggedout">
+                <div>Not Logged In</div>
+                <div>
+                  <div class="login-button">Log In</div>
+                </div>
+              </div><br />
+              <span id="account-loggedout-splash">While logged in you can store your photos in the cloud! And you can seemlessly share them to other users</span>
+            </div>
+          </div>
+          <div class="settings-program">
+
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="/src/index.ts"></script>
