@@ -1,5 +1,5 @@
 const fs = require('fs');
-const fastify = require('fastify')();
+const fastify = require('fastify')({ logger: { level: 'error' } });
 const { randomUUID } = require('crypto');
 const { PNGImage } = require('png-metadata');
 const mergeSort = require('./mergesort.js');
@@ -7,6 +7,9 @@ const worlds = require('vrchat-world-scraper');
 const { shell } = require('electron');
 const os = require('os');
 const sharp = require('sharp');
+const pth = require('path');
+
+const photoMover = require('./photoMover.js');
 
 let allowAuth = { allow: true };
 let keys = [];
@@ -15,10 +18,11 @@ let inScan = false;
 let pictures = [];
 
 let testModeDoNotEnableThis = false; // this allows any program to access the backend without being approved!
+let configData = null;
 
 class Picture{
   constructor(path, name, stat){
-    this.path = path;
+    this.path = pth.resolve(path);
     this.name = name;
     this.stat = stat;
     this.date = getDate(this.name.replace('VRChat_', '').split('.')[0], this.name.split('.')[1].split('_')[0]);
@@ -92,6 +96,79 @@ fastify.register(async ( fastify ) => {
     reply.header('Access-Control-Allow-Headers', 'key');
 
     reply.send("GET");
+  });
+
+  fastify.options('/api/v1/stats', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
+  fastify.options('/api/v1/settings', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
+  fastify.options('/api/v1/settings/:setting', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key, Content-Type');
+    reply.header('Access-Control-Allow-Methods', 'PUT');
+
+    reply.send("PUT");
+  });
+
+  fastify.put('/api/v1/settings/finalPhotoPath', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(!req.body || !req.body.value)return reply.send({ ok: false, message: 'Invaild Value.' });
+
+    configData.finalPhotoPath = req.body.value;
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(configData));
+
+    photoMover.onPathChanged(configData.finalPhotoPath, pictures, onImageCreate, onImageDelete);
+    reply.send({ ok: true });
+  });
+
+  fastify.get('/api/v1/settings', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Value Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    reply.send({ ok: true, originPhotoPath: os.homedir() + '\\Pictures\\VRChat\\', finalPhotoPath: configData.finalPhotoPath });
+  });
+
+  fastify.get('/api/v1/stats', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    let size = 0;
+    pictures.forEach(picture => size += picture.stat.size);
+
+    reply.send({ ok: true, photoCount: pictures.length, totalSize: size });
   });
 
   fastify.get('/api/v1/openurl', ( req, reply ) => {
@@ -292,13 +369,19 @@ let startSpider = async (folder, pictures) => {
   let files = fs.readdirSync(folder);
 
   for(let file of files){
-    let path = folder + '/' + file;
+    let path = pth.resolve(folder + '/' + file);
 
     let stat = fs.statSync(path);
     if(stat.isDirectory())
       await startSpider(path, pictures);
     else if(file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))
       pictures.push(new Picture(path, file, stat));
+    else if(file.match(/VRChat_[0-9]{4}x[0-9]{4}_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}.png/gm)){
+      let fixedName = 'VRChat_' + file.split('_')[2] + '_' + file.split('_')[3].split('.')[0] + '.' + file.split('_')[3].split('.')[1] + '_' + file.split('_')[1].split('_')[0] + '.png';
+      fs.renameSync(path, pth.resolve(folder + '/' + fixedName));
+
+      pictures.push(new Picture(folder + '/' + fixedName, fixedName, stat));
+    }
   }
 }
 
@@ -306,7 +389,7 @@ let scanFolders = async () => {
   inScan = true;
   pictures = [];
 
-  await startSpider(os.homedir() + '/Pictures/VRChat', pictures);
+  await startSpider(configData.finalPhotoPath, pictures);
   mergeSort(pictures);
 
   inScan = false;
@@ -330,6 +413,34 @@ let findBestResolution = ( originalRes, height ) => {
   return [ Math.floor(originalRes[0] * sizeMultiplier), height ];
 };
 
+let onImageDelete = ( file ) => {
+  if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
+
+  console.log('Photo Removed: ' + file);
+  let name = file.split('\\').pop();
+
+  pictures = pictures.filter(p => p.name !== name);
+  keys.forEach(k => k.socket.send(JSON.stringify({ type: 'photo-removed', id: getDate(name.replace('VRChat_', '').split('.')[0], name.split('.')[1].split('_')[0]).getTime() })));
+}
+
+let onImageCreate = ( path, file, dontMove ) => {
+  if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
+  let stat = fs.statSync(path + file);
+
+  setTimeout(() => {
+    let photo = new Picture(path + file, file.split('\\').pop(), stat);
+    if(pictures.find(x => x.timestamp === photo.timestamp))return;
+
+    if(!dontMove)
+      if(photoMover.onPhotoCreated(photo))return;
+
+    pictures.splice(0, 0, photo);
+
+    console.log('New Photo Found: ' + file);
+    keys.forEach(k => k.socket.send(JSON.stringify({ type: 'new-photo', photo: photo })));
+  }, 50);
+}
+
 let updateThread = () => {
   console.log('Watching image folder...');
   let path = os.homedir() + '\\Pictures\\VRChat\\';
@@ -349,29 +460,15 @@ let updateThread = () => {
           console.log(lastImage, file, lastEvent, 'added');
           if(lastImage === file && lastEvent === 'added')return;
 
-          if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
-          let stat = fs.statSync(path + file);
-
-          setTimeout(() => {
-            let photo = new Picture(path + file, file.split('\\').pop(), stat);
-            pictures.splice(0, 0, photo);
-
-            console.log('New Photo Found: ' + file);
-            keys.forEach(k => k.socket.send(JSON.stringify({ type: 'new-photo', photo: photo })));
-          }, 50);
+          onImageCreate(path, file);
 
           lastEvent = 'added';
           lastImage = file;
         } else{
           console.log(lastImage, file, lastEvent, 'deleted');
           if(lastImage === file && lastEvent === 'deleted')return;
-          if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
 
-          console.log('Photo Removed: ' + file);
-          let name = file.split('\\').pop();
-
-          pictures = pictures.filter(p => p.name !== name);
-          keys.forEach(k => k.socket.send(JSON.stringify({ type: 'photo-removed', id: getDate(name.replace('VRChat_', '').split('.')[0], name.split('.')[1].split('_')[0]).getTime() })));
+          onImageDelete(file);
 
           lastEvent = 'deleted';
           lastImage = file;
@@ -394,5 +491,13 @@ let updateThread = () => {
   })
 }
 
-module.exports = { allowAuth };
-scanFolders();
+let config = ( con ) => {
+  configData = con;
+
+  if(!configData.finalPhotoPath)configData.finalPhotoPath = os.homedir() + '\\Pictures\\VRChat\\';
+
+  photoMover.onPathChanged(configData.finalPhotoPath, pictures, onImageCreate, onImageDelete);
+  scanFolders();
+}
+
+module.exports = { allowAuth, config };

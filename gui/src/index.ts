@@ -15,7 +15,7 @@ import statsButton from './photoUI/stats';
 import deleteButton from './photoUI/delete';
 
 import { getCurrentTab } from './tabs';
-import './settings';
+import { loadSettings } from './settings';
 
 let loadingText = document.querySelector<HTMLElement>('.loading')!;
 let photos: any = [];
@@ -24,10 +24,6 @@ let lastPhotoIndex = -1;
 let lastGroupDates: Array<string> = [];
 let currentGroupDate = "";
 let images: Array<HTMLImageElement> = [];
-
-setTimeout(() => {
-    authThread();
-}, 100);
 
 let loadAnotherImage = () => {
   if(getCurrentTab() !== 'photos')return;
@@ -141,6 +137,7 @@ let authThread = async () => {
           })
 
           loadImages();
+          loadSettings();
         }
       })
     }
@@ -273,3 +270,5 @@ deleteButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 statsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 prevButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI);
 nextButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI, loadAnotherImage);
+
+authThread();
