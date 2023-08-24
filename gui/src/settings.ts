@@ -86,7 +86,6 @@ document.querySelector<HTMLElement>("#settings-program-tab")!.onclick = async ()
 }
 
 let setupStorageSetting = ( id: string, cb: ( value: string ) => void ) => {
-  let el = document.querySelector<HTMLElement>(`#${id}`)!;
   let innerEl = document.querySelector<HTMLElement>(`#${id} > div`)!;
   let v = innerEl.innerText;
 
