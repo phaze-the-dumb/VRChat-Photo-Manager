@@ -6,6 +6,7 @@ const { resolve } = require('path');
 let defaultPath = os.homedir() + '\\Pictures\\VRChat';
 let path = os.homedir() + '\\Pictures\\VRChat';
 let abortController = null;
+let isRestoring = () => true;
 
 let onPathChanged = async ( p, photos, onImageCreate, onImageDelete ) => {
   p = resolve(p);
@@ -34,6 +35,8 @@ let onPathChanged = async ( p, photos, onImageCreate, onImageDelete ) => {
   abortController = new AbortController();
 
   fs.watch(path, { recursive: true, signal: abortController.signal }, ( event, file ) => {
+    if(isRestoring())return;
+
     switch(event){
       case 'rename':
         if(fs.existsSync(path + '\\' + file)){
@@ -61,4 +64,4 @@ let onPhotoCreated = ( photo ) => {
   return true;
 }
 
-module.exports = { onPathChanged, onPhotoCreated };
+module.exports = { onPathChanged, onPhotoCreated, isRestoring };

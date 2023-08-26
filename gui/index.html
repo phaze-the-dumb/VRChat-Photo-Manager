@@ -18,7 +18,7 @@
         </div>
 
         <div class="nav-user">
-          <!-- <div class="user-pfp"></div> -->
+          <div class="user-pfp"></div>
           <div class="user-dropdown-button">
             <i class="fa-solid fa-caret-down"></i>
           </div>
@@ -64,11 +64,14 @@
           <div class="settings-account">
             <div class="account-info">
               <div id="account-loggedin">
-                <div class="account-name">Loading...</div><br />
+                <div class="account-pfp"></div>
 
-                <span id="current-storage-used">0GB</span>
-                <div class="storage-bar"></div>
-                <span id="total-storage-available">0GB</span>
+                <div class="account-data">
+                  <div class="account-name">Loading...</div><br />
+
+                  <div class="storage-bar"></div>
+                  <div class="storage-label">0GB / 0GB</div>
+                </div>
               </div>
               <div id="account-loggedout">
                 <div>Not Logged In</div>
@@ -76,7 +79,8 @@
                   <div class="login-button">Log In</div>
                 </div>
               </div><br />
-              <span id="account-loggedout-splash">While logged in you can store your photos in the cloud! And you can seemlessly share them to other users</span>
+              <span id="account-loggedout-splash">(BETA) While logged in you can store your photos in the cloud! And you can seemlessly share them to other users</span>
+              <span id="account-loggedin-splash">(BETA) Want more storage? Message _phaz on discord.</span>
             </div>
           </div>
           <div class="settings-program">

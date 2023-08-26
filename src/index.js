@@ -26,8 +26,6 @@ if(!config.rect){
   fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
 }
 
-photo.config(config);
-
 app.on('ready', () => {
   let mainWindow = new BrowserWindow({
     x: config.rect[0],
@@ -39,11 +37,6 @@ app.on('ready', () => {
   let bounds = mainWindow.getBounds();
   mainWindow.setMenuBarVisibility(false);
 
-  if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
-    mainWindow.loadURL('http://localhost:5173/');
-  else
-    mainWindow.loadFile(path.join(__dirname, '../ui/index.html'));
-
   mainWindow.webContents.on('did-start-navigation', () => photo.allowAuth.allow = true);
 
   windowRect = () => {
@@ -52,6 +45,8 @@ app.on('ready', () => {
 
   mainWindow.on('resize', () => bounds = mainWindow.getBounds());
   mainWindow.on('moved', () => bounds = mainWindow.getBounds());
+
+  photo.config(config, mainWindow);
 });
 
 app.on('window-all-closed', () => {

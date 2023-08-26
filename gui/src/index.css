@@ -295,6 +295,7 @@ img{
   height: 30px;
   border-radius: 50%;
   background: red;
+  display: none;
 }
 
 .user-dropdown-button{
@@ -453,34 +454,70 @@ img{
   background: #fff3;
 }
 
+.account-pfp{
+  position: relative;
+  z-index: 10;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: red;
+  border: #111 solid 5px;
+}
+
 .account-name{
   font-size: 25px;
   color: white;
+  text-align: left;
+  padding: 2px 10px;
+  padding-left: 80px;
+  background: #111;
+  border-radius: 0 10px 10px 0;
+  border-bottom: #00ccff solid 3px;
+  width: fit-content;
+  transform: translateX(-20px);
+}
+
+.account-data{
+  width: calc(100% - 150px);
+  height: 75px;
 }
 
 .storage-bar{
-  width: 60%;
+  width: 100%;
   display: inline-block;
-  height: 10px;
-  border-radius: 5px;
-  background: #000;
+  height: 15px;
+  border-radius: 0 5px 5px 0;
+  background: #111;
+  transform: translateX(-10px);
+  --bar-size: 50%;
 }
 
 .storage-bar::after{
   content: "";
   display: block;
-  height: 10px;
-  width: 40%;
-  border-radius: 5px;
-  background: #06c;
+  height: 15px;
+  width: var(--bar-size);
+  border-radius: 0 5px 5px 0;
+  background: #00ccffcc;
+  transition: 0.5s;
+}
+.storage-label{
+  font-size: 15px;
+  transform: translate(-10px, -20px);
 }
 
 #account-loggedin{
   display: none;
+  justify-content: center;
+  align-items: center;
 }
 
 #account-loggedout-splash{
   color: white;
+}
+
+#account-loggedin-splash{
+  display: none;
 }
 
 #account-loggedout{

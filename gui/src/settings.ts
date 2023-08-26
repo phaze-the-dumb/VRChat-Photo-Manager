@@ -1,5 +1,6 @@
 import anime from 'animejs';
 import { bytesToFormatted } from './utils';
+import { loadAccountStuff } from './account';
 
 let sidebarHighlight = document.querySelector<HTMLElement>(".sidebar-highlight")!;
 let inAnim = false;
@@ -38,6 +39,7 @@ document.querySelector<HTMLElement>("#settings-account-tab")!.onclick = () => {
   anime({
     targets: sidebarHighlight,
     top: '0px',
+    duration: 300,
     complete: () => inAnim = false
   });
 }
@@ -123,6 +125,10 @@ let setupStorageSetting = ( id: string, cb: ( value: string ) => void ) => {
   }
 }
 
+document.querySelector<HTMLElement>('.login-button')!.onclick = () => {
+  window.location.href = 'http://127.0.0.1/api/v1/auth';
+}
+
 let finalStorageLocation = setupStorageSetting('final-storage-location', async ( value ) => {
   let req = await fetch('http://127.0.0.1:53413/api/v1/settings/finalPhotoPath', { method: 'PUT', headers: { 'Content-Type': 'application/json', key: localStorage.getItem('token')! }, body: JSON.stringify({ value }) });
   let res = await req.json();
@@ -137,6 +143,9 @@ let loadSettings = async () => {
 
   finalStorageLocation.text(res.finalPhotoPath);
   document.querySelector('#origin-storage-location')!.children[0].innerHTML = res.originPhotoPath;
+
+  console.log('Loaded settings, now loading account stuff');
+  loadAccountStuff();
 }
 
 export { loadSettings };

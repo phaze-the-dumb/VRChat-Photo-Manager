@@ -10,15 +10,19 @@ const sharp = require('sharp');
 const pth = require('path');
 
 const photoMover = require('./photoMover.js');
+const photoSync = require('./photoSync.js');
+
+photoMover.isRestoring = photoSync.isRestoring;
 
 let allowAuth = { allow: true };
 let keys = [];
 let keyRequests = [];
 let inScan = false;
 let pictures = [];
+let window;
 
-let testModeDoNotEnableThis = false; // this allows any program to access the backend without being approved!
 let configData = null;
+let userData = null;
 
 class Picture{
   constructor(path, name, stat){
@@ -30,6 +34,8 @@ class Picture{
     this.res =  this.name.split('.')[1].split('_')[1].split('x').map(x => parseInt(x));
     this.warnings = [];
     this.VRCXData = null;
+    this.isSynced = null;
+    this.uploadPercent = null;
 
     let meta = new PNGImage(fs.readFileSync(this.path));
 
@@ -121,6 +127,14 @@ fastify.register(async ( fastify ) => {
     reply.header('Access-Control-Allow-Methods', 'PUT');
 
     reply.send("PUT");
+  });
+
+  fastify.options('/api/v1/user', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
   });
 
   fastify.put('/api/v1/settings/finalPhotoPath', ( req, reply ) => {
@@ -220,7 +234,10 @@ fastify.register(async ( fastify ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
 
-    if(allowAuth.allow || testModeDoNotEnableThis){
+    if(photoSync.isRestoring())
+      return reply.send({ ok: false, error: 'Your photos seem to have gone missing. We are currently restoring them from the cloud...' });
+
+    if(allowAuth.allow){
       allowAuth.allow = false;
       return reply.send({ ok: true, waiting: false, orderID: null, key: genNewKey() });
     }
@@ -323,6 +340,19 @@ fastify.register(async ( fastify ) => {
     let photo = pictures.find(x => x.timestamp == req.params.id);
     if(!photo)return reply.send({ ok: false, message: 'Image not found.' });
 
+    if(configData.token){
+      fetch('http://127.0.0.1/api/v1/photos?photo='+photo.name, {
+        headers: {
+          auth: configData.token
+        },
+        method: 'DELETE'
+      })
+        .then(data => data.json())
+        .then(data => {
+          if(!data.ok && data.error !== 'Invalid token')throw new Error(data.error);
+        })
+    }
+
     fs.unlinkSync(photo.path);
     reply.send({ ok: true });
   })
@@ -357,6 +387,107 @@ fastify.register(async ( fastify ) => {
       fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.cache/vrchat/worlds/' + req.params.id + '.json', JSON.stringify({ fetchedAt: Date.now(), data: newData }));
       reply.send({ ok: true, data: newData });
     }
+  })
+
+  fastify.get('/api/v1/user', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key Header.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(configData.token && req.query.refresh){
+      fetch('http://127.0.0.1/api/v1/account', {
+        headers: {
+          auth: configData.token
+        }
+      })
+        .then(data => data.json())
+        .then(data => {
+          if(!data.ok){
+            reply.send({ ok: false });
+            return console.error(data);
+          }
+
+          userData = data.user;
+          reply.send({ ok: true, user: userData });
+
+          if(!data.user.settings.enableSync){
+            reply.send({ ok: true, user: userData });
+            return console.log('Not syncing as user has it disabled');
+          }
+
+          fetch('http://127.0.0.1/api/v1/photos/exists', {
+            headers: {
+              auth: configData.token
+            }
+          })
+            .then(data => data.json())
+            .then(data => {
+              if(!data.ok)return console.error(data);
+
+              photoSync.tryUpload(data.files);
+              photoSync.checkRemote(data.files, pictures);
+            })
+        })
+    } else
+      reply.send({ ok: true, user: userData });
+  })
+
+  fastify.get('/api/v1/auth/callback', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+
+    let token = req.query.token;
+    if(!token)return reply.send('No Token Provided.');
+
+    fetch('http://127.0.0.1/api/v1/account', {
+      headers: {
+        auth: token
+      }
+    })
+      .then(data => data.json())
+      .then(data => {
+        if(data.ok){
+          configData.token = token;
+          userData = data.user;
+
+          console.log('Logged In Successfully', userData);
+
+          fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(configData));
+
+          photoSync.config(configData);
+
+          if(data.user.settings.enableSync){
+            fetch('http://127.0.0.1/api/v1/photos/exists', {
+              headers: {
+                auth: token
+              }
+            })
+              .then(data => data.json())
+              .then(data => {
+                if(!data.ok)return console.error(data);
+
+                photoSync.tryUpload(data.files);
+                photoSync.checkRemote(data.files, pictures);
+              })
+          } else
+            console.log('Not syncing as user has it disabled');
+
+          if(window)
+            reply.send('Logged In Successfully, Please wait and this page will change.');
+          else
+            reply.send('You have been logged in. But there was an internal error. Please press CTRL + R to enter the app again.');
+
+          if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
+            window.loadURL('http://localhost:5173/');
+          else
+            window.loadFile(path.join(__dirname, '../ui/index.html'));
+        } else
+          reply.send('Logging in Failed. Please message _phaz on discord to report this issue. If you just want to continue using the app withoug being logged in please press CTRL + R.');
+      })
   })
 })
 
@@ -394,6 +525,9 @@ let scanFolders = async () => {
 
   inScan = false;
   updateThread();
+
+  for(let pic of pictures)
+    photoSync.addToQueue(pic);
 }
 
 let getDate = ( str, ms ) => {
@@ -491,13 +625,77 @@ let updateThread = () => {
   })
 }
 
-let config = ( con ) => {
+let config = ( con, aWindow ) => {
+  photoSync.config(con);
+
   configData = con;
+  window = aWindow;
 
   if(!configData.finalPhotoPath)configData.finalPhotoPath = os.homedir() + '\\Pictures\\VRChat\\';
 
   photoMover.onPathChanged(configData.finalPhotoPath, pictures, onImageCreate, onImageDelete);
   scanFolders();
+
+  fetch('http://127.0.0.1/api/v1/account', {
+    headers: {
+      auth: configData.token
+    }
+  })
+    .then(data => data.json())
+    .then(data => {
+      if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
+        window.loadURL('http://localhost:5173/');
+      else
+        window.loadFile(path.join(__dirname, '../ui/index.html'));
+
+      if(!data.ok)return console.error(data);
+      if(!data.user.settings.enableSync)return console.log('Not syncing as user has it disabled');
+      userData = data.user;
+
+      fetch('http://127.0.0.1/api/v1/photos/exists', {
+        headers: {
+          auth: configData.token
+        }
+      })
+        .then(data => data.json())
+        .then(data => {
+          if(!data.ok)return console.error(data);
+
+          console.log(data.files);
+          photoSync.tryUpload(data.files);
+          photoSync.checkRemote(data.files, pictures);
+        })
+  })
+    .catch(e => {
+      console.error(e);
+
+      if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
+        window.loadURL('http://localhost:5173/');
+      else
+        window.loadFile(path.join(__dirname, '../ui/index.html'));
+    })
 }
+
+photoSync.updateStorage(( size, photo ) => {
+  userData.used += size;
+  keys.forEach(k => {
+    k.socket.send(JSON.stringify({ type: 'update-storage', used: userData.used, storage: userData.storage }));
+    k.socket.send(JSON.stringify({ type: 'photo-synced', photo: photo.timestamp }));
+  });
+});
+
+photoSync.newPhoto(( path, name ) => {
+  let fullPath = configData.finalPhotoPath + '\\' + path + name;
+  let stat = fs.statSync(fullPath);
+
+  if(file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm)){
+    pictures.push(new Picture(fullPath, name, stat));
+    mergeSort(pictures);
+  }
+})
+
+photoSync.finishedSync(() => {
+  window.webContents.reloadIgnoringCache()
+});
 
 module.exports = { allowAuth, config };
