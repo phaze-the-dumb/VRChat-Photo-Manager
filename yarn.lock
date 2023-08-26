@@ -1667,7 +1667,7 @@ plist@^3.0.4, plist@^3.0.5:
 
 "png-metadata@github:phaze-the-dumb/png-metadata-lib":
   version "0.1.0"
-  resolved "https://codeload.github.com/phaze-the-dumb/png-metadata-lib/tar.gz/5900b232b88ebc5c23fe8c85092a214ef3e30acd"
+  resolved "https://codeload.github.com/phaze-the-dumb/png-metadata-lib/tar.gz/cd465447ba6596aa989b62f02cf817aabccf451c"
 
 prebuild-install@^7.1.1:
   version "7.1.1"

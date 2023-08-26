@@ -15,8 +15,8 @@ let place = ( num: string ): string => {
 }
 
 let bytesToFormatted = ( bytes: number, stage: number ): string => {
-  if(bytes > 1024){
-    bytes = bytes / 1024;
+  if(bytes >= 1000){
+    bytes = bytes / 1000;
 
     if(fileSize[stage + 1])
       return bytesToFormatted(bytes, stage + 1);

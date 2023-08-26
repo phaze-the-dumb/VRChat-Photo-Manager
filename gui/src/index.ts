@@ -2,7 +2,7 @@ import './index.css';
 import anime from 'animejs';
 
 import { isCtxMenuOpen, showContextMenuImage, closeCtxMenu } from './contextMenu';
-import { place, months, days } from './utils';
+import { place, months, days, bytesToFormatted } from './utils';
 import { showPhotoUI, currentPhoto, enlargedImage, trayOpen, setTray, getPhotoIndex, closeImageUI } from './photoUI';
 
 import copyButton from './photoUI/copy';
@@ -255,10 +255,24 @@ let authThread = async () => {
             closeImageUI();
 
           break;
+        case 'update-storage':
+          document.querySelector<HTMLElement>('.storage-label')!.innerHTML = bytesToFormatted(msg.used, 0) + ' / ' + bytesToFormatted(msg.storage, 0);
+
+          if(msg.used === msg.storage)
+            document.querySelector<HTMLElement>('.storage-bar')!.style.setProperty('--bar-size', '100%');
+          else
+            document.querySelector<HTMLElement>('.storage-bar')!.style.setProperty('--bar-size', ( msg.used / msg.storage ) * 100 + '%');
+
+          break;
+        case 'photo-synced':
+          photos.find(( p: any ) => p.timestamp === msg.photo).isSynced = true;
+          break;
       }
     }
-  } else{
+  } else if(res.waiting){
     loadingText.innerHTML = 'Failed to connect to Backend, Please restart the app.';
+  } else{
+    loadingText.innerHTML = res.error;
   }
 }
 
