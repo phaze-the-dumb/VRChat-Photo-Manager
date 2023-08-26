@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu, Tray, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -46,12 +46,47 @@ app.on('ready', () => {
   mainWindow.on('resize', () => bounds = mainWindow.getBounds());
   mainWindow.on('moved', () => bounds = mainWindow.getBounds());
 
+  mainWindow.on('close', e => {
+    e.preventDefault();
+    mainWindow.hide();
+  })
+
+  let icon = nativeImage.createFromPath(path.resolve('./src/icon.ico'));
+
+  let tray = new Tray(icon);
+  tray.setIgnoreDoubleClickEvents(true);
+
+  let trayMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show',
+      click: () => {
+        mainWindow.show();
+      }
+    },
+    {
+      label: 'Quit',
+      click: () => {
+        config.rect = windowRect();
+        fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
+
+        process.exit(0);
+      }
+    }
+  ])
+
+  tray.setContextMenu(trayMenu);
+
+  tray.on('click', () => {
+    config.rect = windowRect();
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
+
+    mainWindow.show();
+  })
+
+  mainWindow.setIcon(icon);
   photo.config(config, mainWindow);
 });
 
 app.on('window-all-closed', () => {
-  config.rect = windowRect();
-  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
-
   app.quit();
 });
