@@ -267,6 +267,39 @@ let authThread = async () => {
         case 'photo-synced':
           photos.find(( p: any ) => p.timestamp === msg.photo).isSynced = true;
           break;
+        case 'restoring':
+          loadingText.innerHTML = 'Some of your photos seem to have gone missing. We are currently restoring them from the cloud...';
+          document.querySelector<HTMLElement>('.loading')!.style.display = 'block';
+
+          anime({
+            targets: '.nav-bar',
+            opacity: 0,
+            easing: 'linear',
+            duration: 500
+          })
+
+          anime({
+            targets: '.loading',
+            opacity: 1,
+            duration: 1000,
+            easing: 'linear'
+          })
+
+          anime({
+            targets: '.image-container',
+            opacity: 0,
+            duration: 50,
+            easing: 'linear'
+          })
+
+          anime({
+            targets: '.settings-container',
+            opacity: 0,
+            duration: 50,
+            easing: 'linear'
+          })
+
+          break;
       }
     }
   } else if(res.waiting){
