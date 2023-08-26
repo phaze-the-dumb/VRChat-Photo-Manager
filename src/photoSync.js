@@ -58,38 +58,47 @@ let runQueue = async () => {
   uploadReq.on('response', ( res ) => {
     let resp = '';
 
-    res.on('data', ( chunk ) => {
-      resp += chunk;
-    })
+    if(res.statusCode === 200){
+      res.on('data', ( chunk ) => {
+        resp += chunk;
+      })
 
-    res.on('end', () => {
-      console.log('Uploaded photo: '+ photo.name, resp);
-      let upload = JSON.parse(resp);
-  
-      if(!upload.ok){
-        if(upload.error === 'Invalid token'){
-          canUpload = false;
-          queue.splice(0, 0, photo);
+      res.on('end', () => {
+        console.log('Uploaded photo: '+ photo.name, resp);
+        let upload = JSON.parse(resp);
+    
+        if(!upload.ok){
+          if(upload.error === 'Invalid token'){
+            canUpload = false;
+            queue.splice(0, 0, photo);
 
+            isQueueRunning = false;
+            return;
+          } else if(upload.error === 'Used too much storage'){
+            canUpload = false;
+            queue.splice(0, 0, photo);
+
+            isQueueRunning = false;
+            return;
+          } else
+            throw new Error('Upload failed: '+upload.error);
+        }
+
+        updateCallback(dataSent, photo);
+
+        if(queue[0])
+          runQueue();
+        else
           isQueueRunning = false;
-          return;
-        } else if(upload.error === 'Used too much storage'){
-          canUpload = false;
-          queue.splice(0, 0, photo);
-
-          isQueueRunning = false;
-          return;
-        } else
-          throw new Error('Upload failed: '+upload.error);
-      }
-
-      updateCallback(dataSent, photo);
-
-      if(queue[0])
+      })
+    } else{
+      setTimeout(() => {
+        console.log(res);
+        console.log('An error occurred while trying to upload the file, trying again in 1 second. Code: '+res.statusCode);
+        queue.splice(0, 0, photo);
         runQueue();
-      else
-        isQueueRunning = false;
-    })
+      }, 1000);
+    }
   })
 }
 
