@@ -35,6 +35,7 @@ let onPathChanged = async ( p, photos, onImageCreate, onImageDelete ) => {
   abortController = new AbortController();
 
   fs.watch(path, { recursive: true, signal: abortController.signal }, ( event, file ) => {
+    console.log(event, file, isRestoring());
     if(isRestoring())return;
 
     switch(event){
@@ -64,4 +65,8 @@ let onPhotoCreated = ( photo ) => {
   return true;
 }
 
-module.exports = { onPathChanged, onPhotoCreated, isRestoring };
+let setIsRestoring = ( value ) => {
+  isRestoring = value;
+}
+
+module.exports = { onPathChanged, onPhotoCreated, setIsRestoring };

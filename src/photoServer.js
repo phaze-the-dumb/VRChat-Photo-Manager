@@ -5,6 +5,7 @@ const { PNGImage } = require('png-metadata');
 const mergeSort = require('./mergesort.js');
 const worlds = require('vrchat-world-scraper');
 const { shell } = require('electron');
+const fetch = require('node-fetch');
 const os = require('os');
 const sharp = require('sharp');
 const pth = require('path');
@@ -12,7 +13,7 @@ const pth = require('path');
 const photoMover = require('./photoMover.js');
 const photoSync = require('./photoSync.js');
 
-photoMover.isRestoring = photoSync.isRestoring;
+photoMover.setIsRestoring(() => photoSync.isRestoring());
 
 let allowAuth = { allow: true };
 let keys = [];
@@ -137,6 +138,14 @@ fastify.register(async ( fastify ) => {
     reply.send("GET");
   });
 
+  fastify.options('/api/v1/status', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
   fastify.put('/api/v1/settings/finalPhotoPath', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -215,6 +224,24 @@ fastify.register(async ( fastify ) => {
     reply.send({ ok: true, pictures: pictures });
   });
 
+  fastify.get('/api/v1/status', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    let isRestoring = photoSync.isRestoring();
+
+    if(isRestoring)
+      keys.forEach(k => k.socket.send(JSON.stringify({ type: 'restoring' })));
+
+    reply.send({ ok: true, scanning: inScan, uploading: photoSync.isUploading(), restoring: isRestoring });
+  });
+
   fastify.get('/api/v1/socket', { websocket: true }, ( connection, req ) => {
     let socket = connection.socket;
 
@@ -235,7 +262,7 @@ fastify.register(async ( fastify ) => {
     reply.header('Access-Control-Allow-Origin', '*');
 
     if(photoSync.isRestoring())
-      return reply.send({ ok: false, error: 'Your photos seem to have gone missing. We are currently restoring them from the cloud...' });
+      return reply.send({ ok: false, error: 'Some of your photos seem to have gone missing. We are currently restoring them from the cloud...' });
 
     if(allowAuth.allow){
       allowAuth.allow = false;
@@ -341,7 +368,7 @@ fastify.register(async ( fastify ) => {
     if(!photo)return reply.send({ ok: false, message: 'Image not found.' });
 
     if(configData.token){
-      fetch('http://127.0.0.1/api/v1/photos?photo='+photo.name, {
+      fetch('https://photos.phazed.xyz/api/v1/photos?photo='+photo.name, {
         headers: {
           auth: configData.token
         },
@@ -399,7 +426,7 @@ fastify.register(async ( fastify ) => {
     if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
 
     if(configData.token && req.query.refresh){
-      fetch('http://127.0.0.1/api/v1/account', {
+      fetch('https://photos.phazed.xyz/api/v1/account', {
         headers: {
           auth: configData.token
         }
@@ -419,7 +446,7 @@ fastify.register(async ( fastify ) => {
             return console.log('Not syncing as user has it disabled');
           }
 
-          fetch('http://127.0.0.1/api/v1/photos/exists', {
+          fetch('https://photos.phazed.xyz/api/v1/photos/exists', {
             headers: {
               auth: configData.token
             }
@@ -443,7 +470,9 @@ fastify.register(async ( fastify ) => {
     let token = req.query.token;
     if(!token)return reply.send('No Token Provided.');
 
-    fetch('http://127.0.0.1/api/v1/account', {
+    console.log(token);
+
+    fetch('https://photos.phazed.xyz/api/v1/account', {
       headers: {
         auth: token
       }
@@ -461,7 +490,7 @@ fastify.register(async ( fastify ) => {
           photoSync.config(configData);
 
           if(data.user.settings.enableSync){
-            fetch('http://127.0.0.1/api/v1/photos/exists', {
+            fetch('https://photos.phazed.xyz/api/v1/photos/exists', {
               headers: {
                 auth: token
               }
@@ -485,8 +514,10 @@ fastify.register(async ( fastify ) => {
             window.loadURL('http://localhost:5173/');
           else
             window.loadFile(path.join(__dirname, '../ui/index.html'));
-        } else
-          reply.send('Logging in Failed. Please message _phaz on discord to report this issue. If you just want to continue using the app withoug being logged in please press CTRL + R.');
+        } else{
+          console.log(data);
+          reply.send('Logging in Failed. Please message _phaz on discord to report this issue.');
+        }
       })
   })
 })
@@ -572,6 +603,11 @@ let onImageCreate = ( path, file, dontMove ) => {
 
     console.log('New Photo Found: ' + file);
     keys.forEach(k => k.socket.send(JSON.stringify({ type: 'new-photo', photo: photo })));
+
+    if(userData && userData.settings.enableSync){
+      photoSync.addToQueue(photo);
+      photoSync.tryUpload();
+    }
   }, 50);
 }
 
@@ -598,15 +634,15 @@ let updateThread = () => {
 
           lastEvent = 'added';
           lastImage = file;
-        } else{
-          console.log(lastImage, file, lastEvent, 'deleted');
-          if(lastImage === file && lastEvent === 'deleted')return;
+        }//  else{
+        //   console.log(lastImage, file, lastEvent, 'deleted');
+        //   if(lastImage === file && lastEvent === 'deleted')return;
 
-          onImageDelete(file);
+        //   onImageDelete(file);
 
-          lastEvent = 'deleted';
-          lastImage = file;
-        }
+        //   lastEvent = 'deleted';
+        //   lastImage = file;
+        // }
     }
 
     if(queue[0])
@@ -636,7 +672,7 @@ let config = ( con, aWindow ) => {
   photoMover.onPathChanged(configData.finalPhotoPath, pictures, onImageCreate, onImageDelete);
   scanFolders();
 
-  fetch('http://127.0.0.1/api/v1/account', {
+  fetch('https://photos.phazed.xyz/api/v1/account', {
     headers: {
       auth: configData.token
     }
@@ -652,7 +688,7 @@ let config = ( con, aWindow ) => {
       if(!data.user.settings.enableSync)return console.log('Not syncing as user has it disabled');
       userData = data.user;
 
-      fetch('http://127.0.0.1/api/v1/photos/exists', {
+      fetch('https://photos.phazed.xyz/api/v1/photos/exists', {
         headers: {
           auth: configData.token
         }

@@ -126,7 +126,7 @@ let setupStorageSetting = ( id: string, cb: ( value: string ) => void ) => {
 }
 
 document.querySelector<HTMLElement>('.login-button')!.onclick = () => {
-  window.location.href = 'http://127.0.0.1/api/v1/auth';
+  window.location.href = 'https://photos.phazed.xyz/api/v1/auth';
 }
 
 let finalStorageLocation = setupStorageSetting('final-storage-location', async ( value ) => {
@@ -146,6 +146,18 @@ let loadSettings = async () => {
 
   console.log('Loaded settings, now loading account stuff');
   loadAccountStuff();
+
+  let i = setInterval(async () => {
+    let req = await fetch('http://127.0.0.1:53413/api/v1/status', { headers: { key: localStorage.getItem('token')! } });
+    let res = await req.json();
+
+    if(res.restoring)window.clearInterval(i);
+
+    if(res.uploading)
+      document.querySelector<HTMLElement>('#sync-status')!.innerHTML = 'Uploading...';
+    else
+      document.querySelector<HTMLElement>('#sync-status')!.innerHTML = '';
+  }, 1000);
 }
 
 export { loadSettings };

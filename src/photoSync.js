@@ -1,4 +1,4 @@
-const http = require('http');
+const https = require('https');
 const { Readable } = require('stream');
 const fs = require('fs');
 
@@ -26,9 +26,10 @@ let runQueue = async () => {
   let size = fs.statSync(photo.path).size;
 
   console.log('Uploading photo: '+ photo.name, size);
-  let uploadReq = http.request({
-    hostname: '127.0.0.1',
-    port: 80,
+
+  let uploadReq = https.request({
+    hostname: 'photos.phazed.xyz',
+    port: 443,
     path: '/api/v1/photos',
     method: 'PUT',
     headers: {
@@ -99,7 +100,7 @@ let runCheckQueue = async () => {
   let photo = checkQueue.shift();
 
   if(!remoteFiles){
-    let existsReq = await fetch('http://127.0.0.1/api/v1/photos/exists?photo=' + photo.name, { headers: { auth: configData.token } });
+    let existsReq = await fetch('https://photos.phazed.xyz/api/v1/photos/exists?photo=' + photo.name, { headers: { auth: configData.token } });
     let exists = await existsReq.json();
 
     if(!exists.ok){
@@ -147,7 +148,7 @@ let runSyncQueue = async () => {
   file = syncQueue.shift();
 
   console.log('Restoring '+file+' as it doesn\'t exist locally');
-  let fileReq = await fetch('http://127.0.0.1/api/v1/photos?photo=' + file, { headers: { auth: configData.token } });
+  let fileReq = await fetch('https://photos.phazed.xyz/api/v1/photos?photo=' + file, { headers: { auth: configData.token } });
 
   if(fileReq.status === 401){
     let fil = await fileReq.json();
@@ -245,4 +246,4 @@ let getDate = ( str, ms ) => {
   return date;
 }
 
-module.exports = { addToQueue, config, tryUpload, updateStorage, checkRemote, newPhoto, finishedSync, isRestoring: () => isSyncQueueRunning };
+module.exports = { addToQueue, config, tryUpload, updateStorage, checkRemote, newPhoto, finishedSync, isRestoring: () => isSyncQueueRunning, isUploading: () => isQueueRunning };
