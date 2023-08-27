@@ -158,19 +158,6 @@ let runSyncQueue = async () => {
 
   let date = getDate(file.replace('VRChat_', '').split('.')[0], file.split('.')[1].split('_')[0]);
 
-  if(fs.existsSync(configData.finalPhotoPath + '\\' + date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '\\' + file)){
-    newPhotoCallback(date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '\\', file);
-
-    if(syncQueue[0])
-      runSyncQueue();
-    else{
-      isSyncQueueRunning = false;
-      finishedSyncCallback();
-    }
-
-    return console.log(file+' Was marked as not existing but it does actually exist');
-  }
-
   console.log('Restoring '+file+' as it doesn\'t exist locally');
   let fileReq = await fetch('https://photos.phazed.xyz/api/v1/photos?photo=' + file, { headers: { auth: configData.token } });
 
