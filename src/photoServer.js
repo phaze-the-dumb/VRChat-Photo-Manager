@@ -599,8 +599,6 @@ let findBestResolution = ( originalRes, height ) => {
 };
 
 let onImageDelete = ( file ) => {
-  if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
-
   console.log('Photo Removed: ' + file);
   let name = file.split('\\').pop();
 
@@ -609,7 +607,6 @@ let onImageDelete = ( file ) => {
 }
 
 let onImageCreate = ( path, file, dontMove ) => {
-  if(!file.split('\\').pop().match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))return;
   let stat = fs.statSync(path + file);
 
   setTimeout(() => {
@@ -747,7 +744,10 @@ photoSync.newPhoto(( path, name ) => {
   let fullPath = configData.finalPhotoPath + '\\' + path + name;
   let stat = fs.statSync(fullPath);
 
-  if(file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm)){
+  if(
+    file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm) ||
+    file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm)
+  ){
     pictures.push(new Picture(fullPath, name, stat));
     mergeSort(pictures);
   }
