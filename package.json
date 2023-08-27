@@ -1,6 +1,6 @@
 {
   "name": "vrcphotos",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "_phaz",
   "license": "MIT",
   "main": "src/index.js",
