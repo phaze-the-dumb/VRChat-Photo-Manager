@@ -51,9 +51,9 @@ app.on('ready', () => {
     mainWindow.hide();
   })
 
-  let icon = nativeImage.createFromPath(path.resolve('./src/icon.ico'));
+  let icon = nativeImage.createFromPath(path.join(__dirname, '../build/icon.ico'));
 
-  let tray = new Tray(icon);
+  let tray = new Tray(icon.resize({ width: 16, height: 16 }));
   tray.setIgnoreDoubleClickEvents(true);
 
   let trayMenu = Menu.buildFromTemplate([

@@ -21,6 +21,7 @@ let keyRequests = [];
 let inScan = false;
 let pictures = [];
 let window;
+let isAlreadyRunning = false;
 
 let configData = null;
 let userData = null;
@@ -164,6 +165,13 @@ fastify.register(async ( fastify ) => {
     photoMover.onPathChanged(configData.finalPhotoPath, pictures, onImageCreate, onImageDelete);
     reply.send({ ok: true });
   });
+
+  fastify.get('/api/v1/show', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    window.show();
+
+    reply.send({ ok: true });
+  })
 
   fastify.get('/api/v1/settings', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
@@ -524,8 +532,12 @@ fastify.register(async ( fastify ) => {
 
 fastify.listen({ port: 53413, host: '127.0.0.1' }, ( err, address ) => {
   if(err){
-    console.error(new Error("App already running."));
-    process.exit(1);
+    isAlreadyRunning = true;
+
+    fetch('http://127.0.0.1:53413/api/v1/show').then(data => {
+      console.error(new Error("App already running."));
+      process.exit(1);
+    });
   }
 });
 
@@ -665,6 +677,9 @@ let updateThread = () => {
 
 let config = ( con, aWindow ) => {
   photoSync.config(con);
+
+  if(isAlreadyRunning)
+    aWindow.close();
 
   configData = con;
   window = aWindow;
