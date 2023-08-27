@@ -71,10 +71,16 @@ img{
   border-radius: 50%;
   align-items: center;
   margin: 0 20px;
+  box-shadow:
+    #000 0 0 10px,
+    #000 0 0 20px inset;
 }
 
 .image-controls-button:hover{
   background: #fff5;
+  box-shadow:
+    #000 0 0 10px,
+    #0005 0 0 20px inset;
 }
 
 .next-image-button{
