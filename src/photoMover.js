@@ -35,8 +35,8 @@ let onPathChanged = async ( p, photos, onImageCreate, onImageDelete ) => {
   abortController = new AbortController();
 
   fs.watch(path, { recursive: true, signal: abortController.signal }, ( event, file ) => {
-    console.log(event, file, isRestoring());
     if(isRestoring())return;
+    if(!file || !file.endsWith('.png'))return;
 
     switch(event){
       case 'rename':

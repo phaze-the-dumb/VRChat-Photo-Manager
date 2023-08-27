@@ -49,7 +49,7 @@ class Picture{
     if(meta.meta && meta.meta.Description && meta.meta.Description.application === 'VRCX')
       this.VRCXData = meta.meta.Description;
 
-    console.log('Found photo: '+this.name);
+    // console.log('Found photo: '+this.name);
   }
 }
 
@@ -377,7 +377,13 @@ fastify.register(async ( fastify ) => {
     let photo = pictures.find(x => x.timestamp == req.params.id);
     if(!photo)return reply.send({ ok: false, message: 'Image not found.' });
 
-    if(configData.token){
+    console.log(photo);
+
+    if(configData.token && userData && userData.settings.enableSync === true){
+      if(photo.isSynced === false){
+        return reply.send({ ok: false, message: 'Image is still syncing. Please wait for it to finish uploading before deleting it. (Queue system coming soon?)' });
+      }
+
       fetch('https://photos.phazed.xyz/api/v1/photos?photo='+photo.name, {
         headers: {
           auth: configData.token
@@ -386,12 +392,16 @@ fastify.register(async ( fastify ) => {
       })
         .then(data => data.json())
         .then(data => {
-          if(!data.ok && data.error !== 'Invalid token')throw new Error(data.error);
-        })
-    }
+          if(data.error === 'File not found')return reply.send({ ok: false, message: 'Image is still syncing. Please wait for it to finish uploading before deleting it. (Queue system coming soon?)' });
+          if(!data.ok && data.error !== 'Invalid token')return reply.send({ ok: false, message: data.error });
 
-    fs.unlinkSync(photo.path);
-    reply.send({ ok: true });
+          fs.unlinkSync(photo.path);
+          reply.send({ ok: true });
+        })
+    } else{
+      fs.unlinkSync(photo.path);
+      reply.send({ ok: true });
+    }
   })
 
   fastify.get('/api/v1/worlds/:id', async ( req, reply ) => {
@@ -640,6 +650,15 @@ let updateThread = () => {
   let runQueue = () => {
     queueRunning = true;
     let { event, file } = queue.shift();
+
+    if(!file || !file.endsWith('.png')){
+      if(queue[0])
+        runQueue();
+      else
+        queueRunning = false;
+
+      return;
+    }
 
     switch(event){
       case 'rename':

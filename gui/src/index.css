@@ -71,10 +71,16 @@ img{
   border-radius: 50%;
   align-items: center;
   margin: 0 20px;
+  box-shadow:
+    #000 0 0 10px,
+    #000 0 0 20px inset;
 }
 
 .image-controls-button:hover{
   background: #fff5;
+  box-shadow:
+    #000 0 0 10px,
+    #0005 0 0 20px inset;
 }
 
 .next-image-button{
@@ -180,6 +186,7 @@ img{
   cursor: pointer;
   user-select: none;
   text-align: center;
+  z-index: 1000000000000000000000;
 }
 
 .loading::before{
@@ -219,6 +226,22 @@ img{
   user-select: none;
   margin: 10px;
   opacity: 0;
+}
+
+.notification-error{
+  background: #4445;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -50px);
+  padding: 10px 20px;
+  color: white;
+  z-index: 1000001;
+  opacity: 0;
+  box-shadow: #0005 0 0 10px;
+  text-align: center;
 }
 
 .notification-copy{
