@@ -521,7 +521,7 @@ fastify.register(async ( fastify ) => {
           if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
             window.loadURL('http://localhost:5173/');
           else
-            window.loadFile(path.join(__dirname, '../ui/index.html'));
+            window.loadFile(pth.join(__dirname, '../ui/index.html'));
         } else{
           console.log(data);
           reply.send('Logging in Failed. Please message _phaz on discord to report this issue.');
