@@ -6,13 +6,6 @@ const os = require('os');
 let photo = require('./photoServer.js');
 let windowRect = () => [ 0, 0, 1160, 700 ];
 
-if(!fs.existsSync(os.homedir() + '/Pictures/VRChat')){
-  console.log('There is no VRChat picture directory, Is vrc installed?');
-  console.log('No photos will be shown as the directory is empty.');
-
-  fs.mkdirSync(os.homedir() + '/Pictures/VRChat', { recursive: true });
-}
-
 if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/'))
   fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/', { recursive: true });
 
@@ -24,6 +17,18 @@ let config = JSON.parse(fs.readFileSync(os.homedir() + '/AppData/Roaming/PhazeDe
 if(!config.rect){
   config.rect = windowRect();
   fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
+}
+
+if(!config.vrcoutput){
+  config.vrcoutput = os.homedir() + '/Pictures/VRChat';
+  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
+}
+
+if(!fs.existsSync(config.vrcoutput)){
+  console.log('There is no VRChat picture directory, Is vrc installed?');
+  console.log('No photos will be shown as the directory is empty.');
+
+  fs.mkdirSync(config.vrcoutput, { recursive: true });
 }
 
 app.on('ready', () => {
