@@ -185,7 +185,7 @@ fastify.register(async ( fastify ) => {
     key = keys.find(k => k.key === key);
     if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
 
-    reply.send({ ok: true, originPhotoPath: os.homedir() + '\\Pictures\\VRChat\\', finalPhotoPath: configData.finalPhotoPath });
+    reply.send({ ok: true, originPhotoPath: configData.vrcoutput, finalPhotoPath: configData.finalPhotoPath });
   });
 
   fastify.get('/api/v1/stats', ( req, reply ) => {
