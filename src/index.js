@@ -10,7 +10,7 @@ if(!fs.existsSync(os.homedir() + '/Pictures/VRChat')){
   console.log('There is no VRChat picture directory, Is vrc installed?');
   console.log('No photos will be shown as the directory is empty.');
 
-  fs.mkdirSync(os.homedir() + '/Pictures/VRChat');
+  fs.mkdirSync(os.homedir() + '/Pictures/VRChat', { recursive: true });
 }
 
 if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/'))
