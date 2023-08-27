@@ -523,8 +523,10 @@ fastify.register(async ( fastify ) => {
 })
 
 fastify.listen({ port: 53413, host: '127.0.0.1' }, ( err, address ) => {
-  if(err)
-    throw new Error("App already running.");
+  if(err){
+    console.error(new Error("App already running."));
+    process.exit(1);
+  }
 });
 
 let startSpider = async (folder, pictures) => {
@@ -682,7 +684,7 @@ let config = ( con, aWindow ) => {
       if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
         window.loadURL('http://localhost:5173/');
       else
-        window.loadFile(path.join(__dirname, '../ui/index.html'));
+        window.loadFile(pth.join(__dirname, '../ui/index.html'));
 
       if(!data.ok)return console.error(data);
       if(!data.user.settings.enableSync)return console.log('Not syncing as user has it disabled');
