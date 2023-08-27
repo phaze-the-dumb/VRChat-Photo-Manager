@@ -48,6 +48,8 @@ class Picture{
 
     if(meta.meta && meta.meta.Description && meta.meta.Description.application === 'VRCX')
       this.VRCXData = meta.meta.Description;
+
+    console.log('Found photo: '+this.name);
   }
 }
 
@@ -543,6 +545,7 @@ fastify.listen({ port: 53413, host: '127.0.0.1' }, ( err, address ) => {
 
 let startSpider = async (folder, pictures) => {
   let files = fs.readdirSync(folder);
+  console.log('Starting spider on '+folder);
 
   for(let file of files){
     let path = pth.resolve(folder + '/' + file);
@@ -550,7 +553,10 @@ let startSpider = async (folder, pictures) => {
     let stat = fs.statSync(path);
     if(stat.isDirectory())
       await startSpider(path, pictures);
-    else if(file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm))
+    else if(
+      file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm) ||
+      file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm)
+    )
       pictures.push(new Picture(path, file, stat));
     else if(file.match(/VRChat_[0-9]{4}x[0-9]{4}_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}.png/gm)){
       let fixedName = 'VRChat_' + file.split('_')[2] + '_' + file.split('_')[3].split('.')[0] + '.' + file.split('_')[3].split('.')[1] + '_' + file.split('_')[1].split('_')[0] + '.png';
