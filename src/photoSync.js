@@ -156,6 +156,8 @@ let runSyncQueue = async () => {
   isSyncQueueRunning = true;
   file = syncQueue.shift();
 
+  let date = getDate(file.replace('VRChat_', '').split('.')[0], file.split('.')[1].split('_')[0]);
+
   console.log('Restoring '+file+' as it doesn\'t exist locally');
   let fileReq = await fetch('https://photos.phazed.xyz/api/v1/photos?photo=' + file, { headers: { auth: configData.token } });
 
@@ -171,8 +173,6 @@ let runSyncQueue = async () => {
       return;
     }
   }
-
-  let date = getDate(file.replace('VRChat_', '').split('.')[0], file.split('.')[1].split('_')[0]);
 
   if(!fs.existsSync(configData.finalPhotoPath + '\\' + date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0')))
     fs.mkdirSync(configData.finalPhotoPath + '\\' + date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0'));
