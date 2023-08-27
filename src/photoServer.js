@@ -249,7 +249,7 @@ fastify.register(async ( fastify ) => {
     if(isRestoring)
       keys.forEach(k => k.socket.send(JSON.stringify({ type: 'restoring' })));
 
-    reply.send({ ok: true, scanning: inScan, uploading: photoSync.isUploading(), restoring: isRestoring });
+    reply.send({ ok: true, scanning: inScan, uploading: photoSync.isUploading(), restoring: isRestoring, lowStorage: userData.used + 20000000 >= userData.storage });
   });
 
   fastify.get('/api/v1/socket', { websocket: true }, ( connection, req ) => {

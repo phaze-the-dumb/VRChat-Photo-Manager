@@ -137,6 +137,7 @@ let finalStorageLocation = setupStorageSetting('final-storage-location', async (
     console.error(res);
 });
 
+let showStorageWarning = false;
 let loadSettings = async () => {
   let req = await fetch('http://127.0.0.1:53413/api/v1/settings', { headers: { key: localStorage.getItem('token')! } });
   let res = await req.json();
@@ -152,6 +153,30 @@ let loadSettings = async () => {
     let res = await req.json();
 
     if(res.restoring)window.clearInterval(i);
+
+    if(res.lowStorage && !showStorageWarning){
+      showStorageWarning = true;
+      document.querySelector<HTMLElement>('.low-storage-warning')!.style.display = 'block';
+
+      anime({
+        targets: '.low-storage-warning',
+        opacity: 1,
+        easing: 'linear',
+        duration: 300
+      })
+    } else if(!res.lowStorage && showStorageWarning){
+      showStorageWarning = false;
+
+      anime({
+        targets: '.low-storage-warning',
+        opacity: 1,
+        easing: 'linear',
+        duration: 300,
+        complete: () => {
+          document.querySelector<HTMLElement>('.low-storage-warning')!.style.display = 'none';
+        }
+      })
+    }
 
     if(res.uploading)
       document.querySelector<HTMLElement>('#sync-status')!.innerHTML = 'Uploading...';
