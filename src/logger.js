@@ -68,8 +68,5 @@ module.exports = {
 
       process.stdout.write('[ERROR]'.red + ' ' + message + '\n')
     });
-  },
-  logToFile: ( log ) => {
-    allowLoggingToFile = log;
   }
 }

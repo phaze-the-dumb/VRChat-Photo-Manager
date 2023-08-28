@@ -103,6 +103,11 @@ let loadImages = async () => {
 
   photos = res.pictures;
 
+  if(photos.length === 0){
+    document.querySelector<HTMLElement>('.image-container')!.innerHTML = '<div class="no-photo-warning">You seem to have no photos.<br />Take some in vrchat!<br /><br />If you are sure that you have photos, OR you have just updated, Please restart the app (its a bug and i have no idea how to fix it)</div>'
+    return;
+  }
+
   setInterval(() => {
     if(imageContainer.offsetHeight + imageContainer.scrollTop >= imageContainer.scrollHeight - 400)
       loadAnotherImage();

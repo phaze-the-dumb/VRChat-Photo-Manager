@@ -752,6 +752,16 @@ img{
   width: 200px;
 }
 
+.no-photo-warning{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 450px;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+}
+
 @keyframes loading {
   0% {
     transform: translate(0, -10px) scale(1, 1);
