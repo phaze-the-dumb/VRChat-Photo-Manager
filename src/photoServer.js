@@ -595,7 +595,6 @@ let startSpider = async (folder, pictures) => {
   }
 }
 
-
 let scanFolders = async () => {
   inScan = true;
   pictures = [];
