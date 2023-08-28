@@ -144,6 +144,7 @@ let loadSettings = async () => {
 
   finalStorageLocation.text(res.finalPhotoPath);
   document.querySelector('#origin-storage-location')!.children[0].innerHTML = res.originPhotoPath;
+  document.querySelector('#software-version')!.innerHTML = 'Software Version: ' + res.version;
 
   console.log('Loaded settings, now loading account stuff');
   loadAccountStuff();
