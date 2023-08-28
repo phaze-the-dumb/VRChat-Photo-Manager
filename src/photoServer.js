@@ -260,6 +260,22 @@ fastify.register(async ( fastify ) => {
     process.exit(0);
   });
 
+  fastify.get('/api/v1/signout', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    configData.token = null;
+    userData = null;
+
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(configData));
+    reply.send({ ok: true });
+  });
 
   fastify.get('/api/v1/status', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
@@ -276,7 +292,10 @@ fastify.register(async ( fastify ) => {
     if(isRestoring)
       keys.forEach(k => k.socket.send(JSON.stringify({ type: 'restoring' })));
 
-    reply.send({ ok: true, scanning: inScan, uploading: photoSync.isUploading(), restoring: isRestoring, lowStorage: userData.used + 20000000 >= userData.storage, update });
+    if(!userData)
+      reply.send({ ok: true, scanning: inScan, uploading: false, restoring: false, lowStorage: false, update });
+    else
+      reply.send({ ok: true, scanning: inScan, uploading: photoSync.isUploading(), restoring: isRestoring, lowStorage: userData.used + 20000000 >= userData.storage, update });
   });
 
   fastify.get('/api/v1/socket', { websocket: true }, ( connection, req ) => {
@@ -695,6 +714,7 @@ let updateThread = () => {
   let runQueue = () => {
     queueRunning = true;
     let { event, file } = queue.shift();
+    console.log('Folder event: '+event+' '+file);
 
     if(!file || !file.endsWith('.png')){
       if(queue[0])
