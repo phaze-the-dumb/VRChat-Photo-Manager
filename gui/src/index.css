@@ -540,6 +540,7 @@ img{
   background: #00ccffcc;
   transition: 0.5s;
 }
+
 .storage-label{
   font-size: 15px;
   transform: translate(-10px, -20px);
@@ -588,6 +589,49 @@ img{
   opacity: 0;
   box-shadow: #0005 0 0 10px;
   overflow: hidden;
+  text-align: center;
+}
+
+.tray-header{
+  font-size: 20px;
+}
+
+.open-user{
+  font-size: 14px;
+  transition: 0.1s;
+}
+
+.open-user:hover{
+  color: #ddd;
+}
+
+.updater{
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
+  color: white;
+  text-align: center;
+  background: #0005;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+}
+
+.update-button{
+  padding: 8px 50px;
+  background: #00ccff;
+  width: fit-content;
+  display: inline-block;
+  border-radius: 10px;
+  margin-top: 10px;
+  box-shadow: #0005 0 0 10px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .world-info{

@@ -5,11 +5,10 @@ const colors = require('colors');
 
 let date = new Date();
 let file = os.homedir() + '/AppData/Roaming/PhazeDev/.logs/vrcpm/log_' + date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + '_' + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds() + '.log';
+let allowLoggingToFile = true;
 
 if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.logs/vrcpm/'))
   fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.logs/vrcpm/', { recursive: true });
-
-fs.writeFileSync(file, '');
 
 process.on('uncaughtException', ( err ) => {
   fs.appendFileSync(file, '[FATAL] ' + err + '\n');
@@ -24,7 +23,11 @@ process.on('unhandledRejection', ( err ) => {
 
 module.exports = {
   log: (...messages) => {
-    fs.appendFileSync(file, '[LOG] ' + messages.join('\n[LOG] ') + '\n');
+    if(allowLoggingToFile && !fs.existsSync(file))
+      fs.writeFileSync(file, '');
+
+    if(allowLoggingToFile)
+      fs.appendFileSync(file, '[LOG] ' + messages.join('\n[LOG] ') + '\n');
 
     messages.forEach(async message => {
       if(typeof message === 'object'){
@@ -36,7 +39,11 @@ module.exports = {
     });
   },
   warn: (...messages) => {
-    fs.appendFileSync(file, '[WARN] ' + messages.join('\n[WARN] ') + '\n');
+    if(allowLoggingToFile && !fs.existsSync(file))
+      fs.writeFileSync(file, '');
+
+    if(allowLoggingToFile)
+      fs.appendFileSync(file, '[WARN] ' + messages.join('\n[WARN] ') + '\n');
 
     messages.forEach(async message => {
       if(typeof message === 'object'){
@@ -48,7 +55,11 @@ module.exports = {
     });
   },
   error: (...messages) => {
-    fs.appendFileSync(file, '[ERROR] ' + messages.join('\n[ERROR] ') + '\n');
+    if(allowLoggingToFile && !fs.existsSync(file))
+      fs.writeFileSync(file, '');
+
+    if(allowLoggingToFile)
+      fs.appendFileSync(file, '[ERROR] ' + messages.join('\n[ERROR] ') + '\n');
 
     messages.forEach(async message => {
       if(typeof message === 'object'){
@@ -59,4 +70,7 @@ module.exports = {
       process.stdout.write('[ERROR]'.red + ' ' + message + '\n')
     });
   },
+  logToFile: ( log ) => {
+    allowLoggingToFile = log;
+  }
 }

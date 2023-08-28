@@ -24,10 +24,13 @@ let showPhotoUI = ( photo: any, img: HTMLImageElement, index: number ) => {
   if(photo.warnings.length > 0)
     document.querySelector<HTMLElement>('#image-warning-button')!.style.display = 'flex';
 
-  if(photo.VRCXData)
+  if(photo.VRCXData){
     document.querySelector<HTMLElement>('#image-info-button')!.style.display = 'flex';
-  else
+    document.querySelector<HTMLElement>('#image-people-button')!.style.display = 'flex';
+  } else{
     document.querySelector<HTMLElement>('#image-info-button')!.style.display = 'none';
+    document.querySelector<HTMLElement>('#image-people-button')!.style.display = 'none';
+  }
 
   c.style.position = 'fixed';
   c.style.top = imgBoundingPos.y + 'px';
