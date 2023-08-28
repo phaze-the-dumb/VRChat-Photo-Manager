@@ -573,9 +573,19 @@ let startSpider = async (folder, pictures) => {
       fs.renameSync(path, pth.resolve(folder + '/' + fixedName));
 
       pictures.push(new Picture(folder + '/' + fixedName, fixedName, stat));
+    } else if(file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}.png/gm)){
+      let meta = new PNGImage(fs.readFileSync(path));
+      let fixedName = file.split('.');
+
+      fixedName.pop();
+      fixedName = fixedName.join('.') + '_' + meta.width + 'x' + meta.height + '.png';
+
+      fs.renameSync(path, pth.resolve(folder + '/' + fixedName));
+      pictures.push(new Picture(folder + '/' + fixedName, fixedName, stat));
     }
   }
 }
+
 
 let scanFolders = async () => {
   inScan = true;
