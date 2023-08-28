@@ -591,11 +591,8 @@ fastify.register(async ( fastify ) => {
 fastify.listen({ port: 53413, host: '127.0.0.1' }, ( err, address ) => {
   if(err){
     isAlreadyRunning = true;
-
-    fetch('http://127.0.0.1:53413/api/v1/show').then(data => {
-      console.error(new Error("App already running."));
-      process.exit(1);
-    });
+    console.error(new Error("App already running."));
+    process.exit(1);
   }
 });
 
@@ -699,7 +696,7 @@ let onImageCreate = ( path, file, dontMove ) => {
       photoSync.addToQueue(photo);
       photoSync.tryUpload();
     }
-  }, 50);
+  }, configData.moveDelay || 500);
 }
 
 let updateThread = () => {

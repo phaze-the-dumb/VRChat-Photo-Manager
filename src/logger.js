@@ -11,13 +11,13 @@ if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.logs/vrcpm/'))
   fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.logs/vrcpm/', { recursive: true });
 
 process.on('uncaughtException', ( err ) => {
-  fs.appendFileSync(file, '[FATAL] ' + err + '\n');
+  fs.appendFileSync(file, '[FATAL] ' + JSON.stringify(err, Object.getOwnPropertyNames(err)) + '\n');
   process.exit(1);
 })
 
 process.on('unhandledRejection', ( err ) => {
-  fs.appendFileSync(file, '[ERROR] Unhandled Rejection:'+ err + '\n');
-  process.stdout.write('[ERROR]'.red + ' ' + message + '\n');
+  fs.appendFileSync(file, '[ERROR] Unhandled Rejection:'+ JSON.stringify(err, Object.getOwnPropertyNames(err)) + '\n');
+  process.stdout.write('[ERROR]'.red + ' ' + err + '\n');
 })
 
 module.exports = {

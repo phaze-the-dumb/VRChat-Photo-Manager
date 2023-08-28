@@ -5,49 +5,67 @@ const fs = require('fs');
 const os = require('os');
 
 console = require('./logger.js');
+console.log('App Start');
+
+console.log('Checking if app is running...');
+fetch('http://127.0.0.1:53413/api/v1/show')
+  .then(() => {
+    throw new Error('App already running.');
+  })
+  .catch(e => {
+    console.log('App not running.');
+  })
 
 let photo = require('./photoServer.js');
 let windowRect = () => [ 0, 0, 1160, 700 ];
-
-if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/'))
-  fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/', { recursive: true });
-
-if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json'))
-  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', '{}');
-
-let config = JSON.parse(fs.readFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', 'utf8'));
-
-if(!config.rect){
-  config.rect = windowRect();
-  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
-}
-
-if(!config.vrcoutput){
-  config.vrcoutput = os.homedir() + '/Pictures/VRChat';
-  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
-}
-
-if(!config.logToFile){
-  config.logToFile = false;
-  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
-}
-
-console.logToFile(config.logToFile);
-
-if(!fs.existsSync(config.vrcoutput)){
-  console.log('There is no VRChat picture directory, Is vrc installed?');
-  console.log('No photos will be shown as the directory is empty.');
-
-  fs.mkdirSync(config.vrcoutput, { recursive: true });
-}
+let mainWindow;
 
 app.on('ready', () => {
-  let mainWindow = new BrowserWindow({
+  if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/'))
+    fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/', { recursive: true });
+
+  if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json'))
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', '{}');
+
+  let config = JSON.parse(fs.readFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', 'utf8'));
+
+  let configNeedsSaving = false;
+  if(!config.rect){
+    config.rect = windowRect();
+    configNeedsSaving = true;
+  }
+
+  if(!config.vrcoutput){
+    config.vrcoutput = os.homedir() + '/Pictures/VRChat';
+    configNeedsSaving = true;
+  }
+
+  if(!config.logToFile){
+    config.logToFile = false;
+    configNeedsSaving = true;
+  }
+
+  if(configNeedsSaving)
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
+
+  mainWindow = new BrowserWindow({
     x: config.rect[0],
     y: config.rect[1],
     width: config.rect[2],
     height: config.rect[3],
   });
+
+  if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)
+    mainWindow.loadURL('http://localhost:5173/');
+  else
+    mainWindow.loadFile(path.join(__dirname, '../ui/index.html'));
+
+  if(!fs.existsSync(config.vrcoutput)){
+    console.log('There is no VRChat picture directory, Is vrc installed?');
+    console.log('No photos will be shown as the directory is empty.');
+
+    fs.mkdirSync(config.vrcoutput, { recursive: true });
+  }
 
   let bounds = mainWindow.getBounds();
   mainWindow.setMenuBarVisibility(false);
@@ -67,6 +85,7 @@ app.on('ready', () => {
   })
 
   let icon = nativeImage.createFromPath(path.join(__dirname, '../build/icon.ico'));
+  mainWindow.setIcon(icon);
 
   let tray = new Tray(icon.resize({ width: 16, height: 16 }));
   tray.setIgnoreDoubleClickEvents(true);
@@ -98,7 +117,7 @@ app.on('ready', () => {
     mainWindow.show();
   })
 
-  mainWindow.setIcon(icon);
+
   photo.config(config, mainWindow, console);
 });
 
