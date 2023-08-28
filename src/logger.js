@@ -17,8 +17,7 @@ process.on('uncaughtException', ( err ) => {
 
 process.on('unhandledRejection', ( err ) => {
   fs.appendFileSync(file, '[ERROR] Unhandled Rejection:'+ err + '\n');
-  process.stdout.write('[ERROR]'.red + ' ' + message + '\n')
-  process.exit(1);
+  process.stdout.write('[ERROR]'.red + ' ' + message + '\n');
 })
 
 module.exports = {
