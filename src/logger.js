@@ -17,8 +17,7 @@ process.on('uncaughtException', ( err ) => {
 
 process.on('unhandledRejection', ( err ) => {
   fs.appendFileSync(file, '[ERROR] Unhandled Rejection:'+ err + '\n');
-  process.stdout.write('[ERROR]'.red + ' ' + message + '\n')
-  process.exit(1);
+  process.stdout.write('[ERROR]'.red + ' ' + message + '\n');
 })
 
 module.exports = {
@@ -27,7 +26,7 @@ module.exports = {
       fs.writeFileSync(file, '');
 
     if(allowLoggingToFile)
-      fs.appendFileSync(file, '[LOG] ' + messages.map(x => typeof x === 'object' ? JSON.stringify(x) : x).join('\n[LOG] ') + '\n');
+      fs.appendFileSync(file, '[LOG] ' + messages.map(x => typeof x === 'object' ? util.inspect(x, true, 50, false) : x).join('\n[LOG] ') + '\n');
 
     messages.forEach(async message => {
       if(typeof message === 'object'){
@@ -43,7 +42,7 @@ module.exports = {
       fs.writeFileSync(file, '');
 
     if(allowLoggingToFile)
-      fs.appendFileSync(file, '[WARN] ' + messages.map(x => typeof x === 'object' ? JSON.stringify(x) : x).join('\n[WARN] ') + '\n');
+      fs.appendFileSync(file, '[WARN] ' + messages.map(x => typeof x === 'object' ? util.inspect(x, true, 50, false) : x).join('\n[WARN] ') + '\n');
 
     messages.forEach(async message => {
       if(typeof message === 'object'){
@@ -59,7 +58,7 @@ module.exports = {
       fs.writeFileSync(file, '');
 
     if(allowLoggingToFile)
-      fs.appendFileSync(file, '[ERROR] ' + messages.map(x => typeof x === 'object' ? JSON.stringify(x) : x).join('\n[ERROR] ') + '\n');
+      fs.appendFileSync(file, '[ERROR] ' + messages.map(x => typeof x === 'object' ? util.inspect(x, true, 50, false) : x).join('\n[ERROR] ') + '\n');
 
     messages.forEach(async message => {
       if(typeof message === 'object'){
