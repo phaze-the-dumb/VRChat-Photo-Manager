@@ -35,6 +35,10 @@ let dropdownButtons: any = {
       translateY: '0px',
       duration: 300
     });
+  },
+  'Sign Out': () => {
+    fetch('http://127.0.0.1:53413/api/v1/signout', { headers: { key: localStorage.getItem('token')! } })
+      .then(() => window.location.reload());
   }
 }
 
