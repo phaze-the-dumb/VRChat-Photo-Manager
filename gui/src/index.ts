@@ -13,6 +13,7 @@ import prevButton from './photoUI/prev';
 import nextButton from './photoUI/next';
 import statsButton from './photoUI/stats';
 import deleteButton from './photoUI/delete';
+import peopleButton from './photoUI/people';
 
 import { getCurrentTab } from './tabs';
 import { loadSettings } from './settings';
@@ -315,6 +316,7 @@ warningsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 infoButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 deleteButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 statsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
+peopleButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 prevButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI);
 nextButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI, loadAnotherImage);
 

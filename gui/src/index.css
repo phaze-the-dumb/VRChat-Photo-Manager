@@ -540,6 +540,7 @@ img{
   background: #00ccffcc;
   transition: 0.5s;
 }
+
 .storage-label{
   font-size: 15px;
   transform: translate(-10px, -20px);
@@ -588,6 +589,20 @@ img{
   opacity: 0;
   box-shadow: #0005 0 0 10px;
   overflow: hidden;
+  text-align: center;
+}
+
+.tray-header{
+  font-size: 20px;
+}
+
+.open-user{
+  font-size: 14px;
+  transition: 0.1s;
+}
+
+.open-user:hover{
+  color: #ddd;
 }
 
 .world-info{
