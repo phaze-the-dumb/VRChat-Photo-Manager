@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
+console = require('./logger.js');
+
 let photo = require('./photoServer.js');
 let windowRect = () => [ 0, 0, 1160, 700 ];
 
@@ -89,7 +91,7 @@ app.on('ready', () => {
   })
 
   mainWindow.setIcon(icon);
-  photo.config(config, mainWindow);
+  photo.config(config, mainWindow, console);
 });
 
 app.on('window-all-closed', () => {
