@@ -28,7 +28,7 @@
     "productName": "VRChat Photo Manager",
     "copyright": "Made with ❤️ by _phaz",
     "win": {
-      "target": "portable",
+      "target": "dir",
       "files": [
         "src/*",
         "ui/*",
