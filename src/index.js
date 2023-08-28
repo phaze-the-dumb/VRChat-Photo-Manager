@@ -20,35 +20,35 @@ let photo = require('./photoServer.js');
 let windowRect = () => [ 0, 0, 1160, 700 ];
 let mainWindow;
 
+if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/'))
+  fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/', { recursive: true });
+
+if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json'))
+  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', '{}');
+
+let config = JSON.parse(fs.readFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', 'utf8'));
+
+let configNeedsSaving = false;
+if(!config.rect){
+  config.rect = windowRect();
+  configNeedsSaving = true;
+}
+
+if(!config.vrcoutput){
+  config.vrcoutput = os.homedir() + '/Pictures/VRChat';
+  configNeedsSaving = true;
+}
+
+if(!config.logToFile){
+  config.logToFile = false;
+  configNeedsSaving = true;
+}
+
+if(configNeedsSaving)
+  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
+
 app.on('ready', () => {
-  if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/'))
-    fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/', { recursive: true });
-
-  if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json'))
-    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', '{}');
-
-  let config = JSON.parse(fs.readFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', 'utf8'));
-
-  let configNeedsSaving = false;
-  if(!config.rect){
-    config.rect = windowRect();
-    configNeedsSaving = true;
-  }
-
-  if(!config.vrcoutput){
-    config.vrcoutput = os.homedir() + '/Pictures/VRChat';
-    configNeedsSaving = true;
-  }
-
-  if(!config.logToFile){
-    config.logToFile = false;
-    configNeedsSaving = true;
-  }
-
-  if(configNeedsSaving)
-    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
-
-  mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
     x: config.rect[0],
     y: config.rect[1],
     width: config.rect[2],
