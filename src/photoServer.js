@@ -778,11 +778,9 @@ photoSync.updateStorage(( size, photo ) => {
   });
 });
 
-photoSync.newPhoto(( path, name, aConsole ) => {
+photoSync.newPhoto(( path, name ) => {
   let fullPath = configData.finalPhotoPath + '\\' + path + name;
   let stat = fs.statSync(fullPath);
-
-  console = aConsole;
 
   if(
     file.match(/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png/gm) ||
