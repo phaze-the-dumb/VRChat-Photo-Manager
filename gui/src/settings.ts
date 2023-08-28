@@ -224,8 +224,7 @@ document.querySelector<HTMLElement>('.update-button')!.onclick = () => {
   })
 
   fetch('http://127.0.0.1:53413/api/v1/confirm-update', { headers: { key: localStorage.getItem('token')! } })
-    .then(data => data.json())
-    .then(data => {
+    .then(() => {
       document.querySelector<HTMLElement>('.loading')!.innerHTML = 'Installer opened. The app will close in a few seconds.';
     })
 }
