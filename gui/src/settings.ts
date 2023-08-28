@@ -138,6 +138,8 @@ let finalStorageLocation = setupStorageSetting('final-storage-location', async (
 });
 
 let showStorageWarning = false;
+let showUpdaterWarning = false;
+
 let loadSettings = async () => {
   let req = await fetch('http://127.0.0.1:53413/api/v1/settings', { headers: { key: localStorage.getItem('token')! } });
   let res = await req.json();
@@ -149,11 +151,28 @@ let loadSettings = async () => {
   console.log('Loaded settings, now loading account stuff');
   loadAccountStuff();
 
+  let sres = res;
+
   let i = setInterval(async () => {
     let req = await fetch('http://127.0.0.1:53413/api/v1/status', { headers: { key: localStorage.getItem('token')! } });
     let res = await req.json();
 
     if(res.restoring)window.clearInterval(i);
+
+    if(res.update && !showUpdaterWarning){
+      showUpdaterWarning = true;
+      document.querySelector<HTMLElement>('.updater')!.style.display = 'flex';
+
+      document.querySelector<HTMLElement>('#current-version')!.innerHTML = sres.version;
+      document.querySelector<HTMLElement>('#update-version')!.innerHTML = res.update.tag_name;
+
+      anime({
+        targets: '.updater',
+        opacity: 1,
+        easing: 'linear',
+        duration: 300
+      })
+    }
 
     if(res.lowStorage && !showStorageWarning){
       showStorageWarning = true;
@@ -184,6 +203,31 @@ let loadSettings = async () => {
     else
       document.querySelector<HTMLElement>('#sync-status')!.innerHTML = '';
   }, 1000);
+}
+
+document.querySelector<HTMLElement>('.update-button')!.onclick = () => {
+  anime({
+    targets: '.updater',
+    opacity: 0,
+    easing: 'linear',
+    duration: 300
+  })
+
+  document.querySelector<HTMLElement>('.loading')!.style.display = 'block';
+  document.querySelector<HTMLElement>('.loading')!.innerHTML = 'Updating...';
+
+  anime({
+    targets: '.loading',
+    opacity: 1,
+    easing: 'linear',
+    duration: 300
+  })
+
+  fetch('http://127.0.0.1:53413/api/v1/confirm-update', { headers: { key: localStorage.getItem('token')! } })
+    .then(data => data.json())
+    .then(data => {
+      document.querySelector<HTMLElement>('.loading')!.innerHTML = 'Installer opened. The app will close in a few seconds.';
+    })
 }
 
 export { loadSettings };

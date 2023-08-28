@@ -22,6 +22,7 @@ let inScan = false;
 let pictures = [];
 let window;
 let isAlreadyRunning = false;
+let update = null;
 
 let configData = null;
 let userData = null;
@@ -149,6 +150,14 @@ fastify.register(async ( fastify ) => {
     reply.send("GET");
   });
 
+  fastify.options('/api/v1/confirm-update', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
   fastify.put('/api/v1/settings/finalPhotoPath', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -234,6 +243,24 @@ fastify.register(async ( fastify ) => {
     reply.send({ ok: true, pictures: pictures });
   });
 
+  fastify.get('/api/v1/confirm-update', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    let p = require('child_process').spawn(`vrcpm-installer.exe`, { detached: true, cwd: os.homedir() + '/AppData/Roaming/PhazeDev/.temp/', shell: true });
+    p.unref();
+
+    reply.send({ ok: true });
+    process.exit(0);
+  });
+
+
   fastify.get('/api/v1/status', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -249,7 +276,7 @@ fastify.register(async ( fastify ) => {
     if(isRestoring)
       keys.forEach(k => k.socket.send(JSON.stringify({ type: 'restoring' })));
 
-    reply.send({ ok: true, scanning: inScan, uploading: photoSync.isUploading(), restoring: isRestoring, lowStorage: userData.used + 20000000 >= userData.storage });
+    reply.send({ ok: true, scanning: inScan, uploading: photoSync.isUploading(), restoring: isRestoring, lowStorage: userData.used + 20000000 >= userData.storage, update });
   });
 
   fastify.get('/api/v1/socket', { websocket: true }, ( connection, req ) => {
@@ -794,4 +821,8 @@ photoSync.finishedSync(() => {
   window.webContents.reloadIgnoringCache()
 });
 
-module.exports = { allowAuth, config };
+let updateAvailable = ( aUpdate ) => {
+  update = aUpdate;
+}
+
+module.exports = { allowAuth, config, updateAvailable };

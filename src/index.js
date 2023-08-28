@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, Tray, nativeImage } = require('electron');
+const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -25,6 +26,13 @@ if(!config.vrcoutput){
   config.vrcoutput = os.homedir() + '/Pictures/VRChat';
   fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
 }
+
+if(!config.logToFile){
+  config.logToFile = false;
+  fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
+}
+
+console.logToFile(config.logToFile);
 
 if(!fs.existsSync(config.vrcoutput)){
   console.log('There is no VRChat picture directory, Is vrc installed?');
@@ -97,3 +105,26 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
   app.quit();
 });
+
+fetch('https://api.github.com/repos/phaze-the-dumb/VRChat-Photo-Manager/releases/latest')
+  .then(data => data.json())
+  .then(async data => {
+    let currentVersion = require('../package.json').version;
+
+    if(data.tag_name !== currentVersion){
+      console.log('A new version of VRChat-Photo-Manager is available! Downloading installer to temp directory to get ready for update.');
+      photo.updateAvailable(data);
+
+      let req = await fetch('https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Installer/releases/download/v0.1.0/vrcpm-installer.exe');
+
+      if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.temp/'))
+        fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.temp/', { recursive: true });
+
+      let stream = fs.createWriteStream(os.homedir() + '/AppData/Roaming/PhazeDev/.temp/vrcpm-installer.exe');
+      req.body.pipe(stream);
+
+      stream.on('finish', () => {
+        console.log('VRChat-Photo-Manager-Installer downloaded to temp directory.');
+      });
+    }
+  })
