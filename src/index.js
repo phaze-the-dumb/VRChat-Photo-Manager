@@ -134,7 +134,7 @@ fetch('https://api.github.com/repos/phaze-the-dumb/VRChat-Photo-Manager/releases
       console.log('A new version of VRChat-Photo-Manager is available! Downloading installer to temp directory to get ready for update.');
       photo.updateAvailable(data);
 
-      let req = await fetch('https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Installer/releases/download/v0.1.0/vrcpm-installer.exe');
+      let req = await fetch('https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Installer/releases/download/v0.1.1/vrcpm-installer.exe');
 
       if(!fs.existsSync(os.homedir() + '/AppData/Roaming/PhazeDev/.temp/'))
         fs.mkdirSync(os.homedir() + '/AppData/Roaming/PhazeDev/.temp/', { recursive: true });
