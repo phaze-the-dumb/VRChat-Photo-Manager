@@ -47,6 +47,8 @@ if(!config.logToFile){
 if(configNeedsSaving)
   fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
 
+console.log('Config:', config);
+
 app.on('ready', () => {
     mainWindow = new BrowserWindow({
     x: config.rect[0],
