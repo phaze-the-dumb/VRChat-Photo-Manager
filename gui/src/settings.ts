@@ -1,6 +1,6 @@
 import anime from 'animejs';
 import { bytesToFormatted } from './utils';
-import { loadAccountStuff } from './account';
+import { loadAccountStuff, isLoggedIn } from './account';
 
 let sidebarHighlight = document.querySelector<HTMLElement>(".sidebar-highlight")!;
 let inAnim = false;
@@ -229,4 +229,4 @@ document.querySelector<HTMLElement>('.update-button')!.onclick = () => {
     })
 }
 
-export { loadSettings };
+export { loadSettings, isLoggedIn };

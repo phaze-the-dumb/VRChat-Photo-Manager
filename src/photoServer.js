@@ -158,6 +158,14 @@ fastify.register(async ( fastify ) => {
     reply.send("GET");
   });
 
+  fastify.options('/api/v1/signout', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
   fastify.put('/api/v1/settings/finalPhotoPath', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -552,7 +560,6 @@ fastify.register(async ( fastify ) => {
           console.log('Logged In Successfully', userData);
 
           fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(configData));
-
           photoSync.config(configData);
 
           if(data.user.settings.enableSync){
@@ -681,6 +688,8 @@ let onImageCreate = ( path, file, dontMove ) => {
   let stat = fs.statSync(path + file);
 
   setTimeout(() => {
+    if(!fs.existsSync(path + file))return;
+
     let photo = new Picture(path + file, file.split('\\').pop(), stat);
     if(pictures.find(x => x.timestamp === photo.timestamp))return;
 
@@ -696,7 +705,7 @@ let onImageCreate = ( path, file, dontMove ) => {
       photoSync.addToQueue(photo);
       photoSync.tryUpload();
     }
-  }, configData.moveDelay || 500);
+  }, configData.moveDelay || 1500);
 }
 
 let updateThread = () => {

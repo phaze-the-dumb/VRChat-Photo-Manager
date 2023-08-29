@@ -3,7 +3,7 @@ import anime from 'animejs';
 
 import { isCtxMenuOpen, showContextMenuImage, closeCtxMenu } from './contextMenu';
 import { place, months, days, bytesToFormatted } from './utils';
-import { showPhotoUI, currentPhoto, enlargedImage, trayOpen, setTray, getPhotoIndex, closeImageUI } from './photoUI';
+import { showPhotoUI, currentPhoto, enlargedImage, trayOpen, setTray, getPhotoIndex, closeImageUI, closeImageUINoAnim, showPhotoUINoAnim } from './photoUI';
 
 import copyButton from './photoUI/copy';
 import shareButton from './photoUI/share';
@@ -15,8 +15,10 @@ import statsButton from './photoUI/stats';
 import deleteButton from './photoUI/delete';
 import peopleButton from './photoUI/people';
 
-import { getCurrentTab } from './tabs';
-import { loadSettings } from './settings';
+import { getCurrentTab, loggedIn } from './tabs';
+import { loadSettings, isLoggedIn } from './settings';
+
+isLoggedIn(() => loggedIn());
 
 let loadingText = document.querySelector<HTMLElement>('.loading')!;
 let photos: any = [];
@@ -322,7 +324,7 @@ infoButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 deleteButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 statsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 peopleButton.regButton(setTray, () => trayOpen, () => currentPhoto);
-prevButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI);
-nextButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUI, showPhotoUI, loadAnotherImage);
+prevButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUINoAnim, showPhotoUINoAnim);
+nextButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUINoAnim, showPhotoUINoAnim, loadAnotherImage);
 
 authThread();
