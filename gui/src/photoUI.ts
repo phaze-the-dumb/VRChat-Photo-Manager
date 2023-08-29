@@ -12,6 +12,117 @@ let trayOpen = 'none';
 let setTray = ( tray: string ) =>
   trayOpen = tray;
 
+let showPhotoUINoAnim = ( photo: any, img: HTMLImageElement, index: number ) => {
+  console.log(photo, index);
+
+  if(document.querySelector<HTMLElement>(".image-view")!.style.display === 'block')
+    return;
+
+
+  let c = img.parentElement!;
+  imgBoundingPos = img.getBoundingClientRect();
+
+  if(photo.warnings.length > 0)
+    document.querySelector<HTMLElement>('#image-warning-button')!.style.display = 'flex';
+
+  if(photo.VRCXData){
+    document.querySelector<HTMLElement>('#image-info-button')!.style.display = 'flex';
+    document.querySelector<HTMLElement>('#image-people-button')!.style.display = 'flex';
+  } else{
+    document.querySelector<HTMLElement>('#image-info-button')!.style.display = 'none';
+    document.querySelector<HTMLElement>('#image-people-button')!.style.display = 'none';
+  }
+
+  c.style.position = 'fixed';
+  c.style.top = imgBoundingPos.y + 'px';
+  c.style.left = imgBoundingPos.x + 'px';
+  c.style.zIndex = '9999';
+  c.style.display = 'block';
+  c.style.margin = '0px';
+
+  img.style.height = '100%';
+  img.style.width = '100%';
+
+  currentImage = img;
+  currentPhoto = photo;
+  currentPhotoIndex = index;
+
+  let width = (photo.res[0] * ( window.innerHeight / photo.res[1] ));
+  let height = window.innerHeight;
+  let left = window.innerWidth / 2 - width / 2;
+  let top = 0;
+
+  if(width > window.innerWidth){
+    width = window.innerWidth;
+    height = (photo.res[1] * ( window.innerWidth / photo.res[0] ));
+    left = 0;
+    top = window.innerHeight / 2 - height / 2;
+  }
+
+  window.onresize = () => {
+    width = (photo.res[0] * ( window.innerHeight / photo.res[1] ));
+    height = window.innerHeight;
+    left = window.innerWidth / 2 - width / 2;
+
+    if(width > window.innerWidth){
+      width = window.innerWidth;
+      height = (photo.res[1] * ( window.innerWidth / photo.res[0] ));
+      left = 0;
+      top = window.innerHeight / 2 - height / 2;
+    }
+
+    if(enlargedImage){
+      enlargedImage.style.width = width + 'px';
+      enlargedImage.style.height = height + 'px';
+      enlargedImage.style.top = top + 'px';
+      enlargedImage.style.left = left + 'px';
+    }
+
+    c.style.width = width + 'px';
+    c.style.height = height + 'px';
+    c.style.top = top + 'px';
+    c.style.left = left + 'px';
+    c.style.filter = 'blur(10px)';
+  }
+
+  let nav = document.querySelector<HTMLElement>(".nav-bar")!;
+  nav.style.top = '-50px';
+
+  c.style.width = width + 'px';
+  c.style.height = height + 'px';
+  c.style.filter = 'blur(10px)';
+  c.style.top = top + 'px';
+  c.style.left = left + 'px';
+  console.log('Made Image Bigger');
+
+  let image = document.createElement('img');
+  image.style.position = 'fixed';
+  image.oncontextmenu = ( e ) => {
+    e.preventDefault();
+
+    if(isCtxMenuOpen)return closeCtxMenu(() => showContextMenuImageView( photo, image, e ));
+    showContextMenuImageView( photo, image, e );
+  }
+
+  image.crossOrigin = 'anonymous';
+  image.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/hd?key=' + localStorage.getItem('token');
+  document.querySelector<HTMLElement>(".image-view")!.appendChild(image);
+
+  image.onload = () => {
+    console.log('Loaded Higher Res Image');
+
+    document.querySelector<HTMLElement>(".image-view")!.style.display = 'block';
+    document.querySelector<HTMLElement>(".image-view")!.style.opacity = '1';
+
+    enlargedImage = image;
+
+    enlargedImage.style.width = width + 'px';
+    enlargedImage.style.height = height + 'px';
+    enlargedImage.style.top = top + 'px';
+    enlargedImage.style.left = left + 'px';
+  }
+}
+
 let showPhotoUI = ( photo: any, img: HTMLImageElement, index: number ) => {
   console.log(photo, index);
 
@@ -147,6 +258,67 @@ let showPhotoUI = ( photo: any, img: HTMLImageElement, index: number ) => {
   }
 }
 
+let closeImageUINoAnim = ( trayCloseAnim: boolean ) => {
+  window.onresize = () => {};
+
+  if(trayOpen !== 'none') {
+    if(trayCloseAnim){
+      anime({
+        targets: '.image-tray',
+        opacity: 0,
+        translateY: '-50px',
+        easing: 'linear',
+        duration: 300,
+        complete: () => {
+          document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
+        }
+      })
+    } else{
+      anime.set('.image-tray', { opacity: 0, translateY: '-50px', display: 'none' })
+    }
+  }
+
+  anime.set('.image-view', { opacity: 0, display: 'none' });
+  console.log('Hidden Image View');
+
+  let c = currentImage!.parentElement!;
+  let photo = currentPhoto!;
+
+  document.querySelector<HTMLElement>('.image-view')!.querySelectorAll('img').forEach( ( img: HTMLImageElement ) => { img.remove(); } );
+  enlargedImage = null;
+
+  anime.set(c, {
+    width: Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px',
+    height: '200px',
+    filter: 'blur(0px)',
+    top: imgBoundingPos!.y - 10,
+    left: imgBoundingPos!.x - 10,
+    margin: '10px'
+  })
+
+  console.log('Made image smaller');
+
+  c.style.display = 'inline-block';
+  c.style.position = 'static';
+
+  currentImage = null;
+  currentPhoto = null;
+  currentPhotoIndex = -1;
+
+  trayOpen = 'none';
+  document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
+
+  let nav = document.querySelector<HTMLElement>(".nav-bar")!;
+  nav.style.top = '0px';
+
+  anime.set(c, {
+    width: Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px',
+    height: '200px',
+    filter: 'blur(0px)',
+    margin: '10px'
+  })
+}
+
 let closeImageUI = () => {
   window.onresize = () => {};
 
@@ -157,6 +329,9 @@ let closeImageUI = () => {
       translateY: '-50px',
       easing: 'linear',
       duration: 300,
+      complete: () => {
+        document.querySelector<HTMLElement>('.image-tray')!.style.display = 'none';
+      }
     })
   }
 
@@ -224,4 +399,4 @@ let getPhotoIndex = () => currentPhotoIndex;
 
 document.querySelector<HTMLElement>('.image-close')!.onclick = () => closeImageUI();
 
-export { showPhotoUI, currentImage, currentPhoto, enlargedImage, imgBoundingPos, trayOpen, setTray, getPhotoIndex, closeImageUI };
+export { showPhotoUI, currentImage, currentPhoto, enlargedImage, imgBoundingPos, trayOpen, setTray, getPhotoIndex, closeImageUI, showPhotoUINoAnim, closeImageUINoAnim };
