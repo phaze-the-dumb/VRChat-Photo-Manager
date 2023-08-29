@@ -16,7 +16,7 @@ process.on('uncaughtException', ( err ) => {
 })
 
 process.on('unhandledRejection', ( err ) => {
-  fs.appendFileSync(file, '[ERROR] Unhandled Rejection:'+ JSON.stringify(err, Object.getOwnPropertyNames(err)) + '\n');
+  fs.appendFileSync(file, '[ERROR] Unhandled Rejection:'+ err.stack + '\n');
   process.stdout.write('[ERROR]'.red + ' ' + err + '\n');
 })
 

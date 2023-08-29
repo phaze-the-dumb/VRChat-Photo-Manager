@@ -688,6 +688,8 @@ let onImageCreate = ( path, file, dontMove ) => {
   let stat = fs.statSync(path + file);
 
   setTimeout(() => {
+    if(!fs.existsSync(path + file))return;
+
     let photo = new Picture(path + file, file.split('\\').pop(), stat);
     if(pictures.find(x => x.timestamp === photo.timestamp))return;
 
@@ -703,7 +705,7 @@ let onImageCreate = ( path, file, dontMove ) => {
       photoSync.addToQueue(photo);
       photoSync.tryUpload();
     }
-  }, configData.moveDelay || 500);
+  }, configData.moveDelay || 1500);
 }
 
 let updateThread = () => {
