@@ -15,8 +15,10 @@ import statsButton from './photoUI/stats';
 import deleteButton from './photoUI/delete';
 import peopleButton from './photoUI/people';
 
-import { getCurrentTab } from './tabs';
-import { loadSettings } from './settings';
+import { getCurrentTab, loggedIn } from './tabs';
+import { loadSettings, isLoggedIn } from './settings';
+
+isLoggedIn(() => loggedIn());
 
 let loadingText = document.querySelector<HTMLElement>('.loading')!;
 let photos: any = [];
