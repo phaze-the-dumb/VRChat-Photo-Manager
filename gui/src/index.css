@@ -770,6 +770,7 @@ img{
   width: 100%;
   background: #5a5a5a31;
   backdrop-filter: blur(10px);
+  display: none;
 }
 
 .jump-to-date-menu .center-container{
