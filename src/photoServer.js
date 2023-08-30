@@ -9,6 +9,7 @@ const fetch = require('node-fetch');
 const os = require('os');
 const sharp = require('sharp');
 const pth = require('path');
+const shortcuts = require('windows-shortcuts');
 
 const photoMover = require('./photoMover.js');
 const photoSync = require('./photoSync.js');
@@ -166,10 +167,65 @@ fastify.register(async ( fastify ) => {
     reply.send("GET");
   });
 
+  fastify.put('/api/v1/settings/startInTray', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key, Content-Type');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(!req.body || req.body.enabled === undefined)return reply.send({ ok: false, message: 'Invaild Value.' });
+
+    configData.startInTray = req.body.enabled;
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(configData));
+
+    reply.send({ ok: true });
+  });
+
+  fastify.put('/api/v1/settings/startWithWindows', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key, Content-Type');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(!req.body || req.body.enabled === undefined)return reply.send({ ok: false, message: 'Invaild Value.' });
+    let shortcutPath = pth.join(os.homedir() + '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\VRChatPhotoManager.lnk');
+
+    if(req.body.enabled){
+      let installPath = 'C:\\Program Files\\Phaze\\VRChatPhotoManager\\VRChat Photo Manager.exe';
+
+      if(!fs.existsSync(installPath)){
+        reply.send({ ok: false, message: 'VRChat Photo Manager is not installed. App will now crash because fek you' });
+        throw new Error("VRChat Photo Manager is not installed. (How?)");
+      }
+
+      shortcuts.create(shortcutPath, installPath);
+    } else{
+      if(!fs.existsSync(shortcutPath)){
+        console.warn("Cannot remove VRChat Photo Manager shortcut as it doesn't exist.");
+        return reply.send({ ok: false, message: 'Cannot find VRChat photo manager shortcut' });
+      }
+
+      fs.unlinkSync(shortcutPath);
+    }
+
+    configData.startWithWindows = req.body.enabled;
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(configData));
+
+    reply.send({ ok: true });
+  });
+
   fastify.put('/api/v1/settings/finalPhotoPath', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
-    reply.header('Access-Control-Allow-Headers', 'key');
+    reply.header('Access-Control-Allow-Headers', 'key, Content-Type');
 
     let key = req.headers.key;
     if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
@@ -202,7 +258,10 @@ fastify.register(async ( fastify ) => {
     key = keys.find(k => k.key === key);
     if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
 
-    reply.send({ ok: true, originPhotoPath: configData.vrcoutput, finalPhotoPath: configData.finalPhotoPath, version: require('../package.json').version });
+    reply.send({ ok: true,
+      originPhotoPath: configData.vrcoutput, finalPhotoPath: configData.finalPhotoPath,
+      version: require('../package.json').version, startWithWindows: configData.startWithWindows,
+    });
   });
 
   fastify.get('/api/v1/stats', ( req, reply ) => {

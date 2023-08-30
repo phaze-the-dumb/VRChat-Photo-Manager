@@ -151,6 +151,30 @@ let loadSettings = async () => {
   console.log('Loaded settings, now loading account stuff');
   loadAccountStuff();
 
+  document.querySelector<HTMLInputElement>('#start-with-windows')!.checked = res.startWithWindows;
+
+  document.querySelector<HTMLInputElement>('#start-with-windows')!.onchange = async () => {
+    let enabled = document.querySelector<HTMLInputElement>('#start-with-windows')!.checked;
+
+    let req = await fetch('http://127.0.0.1:53413/api/v1/settings/startWithWindows', { method: 'PUT', headers: { key: localStorage.getItem('token')!, 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled }) });
+    let res = await req.json();
+
+    if(!res.ok)
+      console.error(res);
+  }
+
+  document.querySelector<HTMLInputElement>('#start-in-tray')!.checked = res.startInTray;
+
+  document.querySelector<HTMLInputElement>('#start-in-tray')!.onchange = async () => {
+    let enabled = document.querySelector<HTMLInputElement>('#start-in-tray')!.checked;
+
+    let req = await fetch('http://127.0.0.1:53413/api/v1/settings/startInTray', { method: 'PUT', headers: { key: localStorage.getItem('token')!, 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled }) });
+    let res = await req.json();
+
+    if(!res.ok)
+      console.error(res);
+  }
+
   let sres = res;
 
   let i = setInterval(async () => {

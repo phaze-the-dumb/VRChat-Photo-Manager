@@ -9,6 +9,7 @@ console.log('App Start');
 
 console.log('Checking if app is running...');
 fetch('http://127.0.0.1:53413/api/v1/show')
+  .then(res => res.json())
   .then(() => {
     throw new Error('App already running.');
   })
@@ -47,12 +48,15 @@ if(!config.logToFile){
 if(configNeedsSaving)
   fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
 
+console.log(config);
+
 app.on('ready', () => {
-    mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     x: config.rect[0],
     y: config.rect[1],
     width: config.rect[2],
     height: config.rect[3],
+    show: config.startInTray ? false : true
   });
 
   if(isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false)

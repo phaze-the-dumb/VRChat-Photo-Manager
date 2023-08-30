@@ -17,7 +17,8 @@
     "node-fetch": "v2",
     "png-metadata": "github:phaze-the-dumb/png-metadata-lib",
     "sharp": "^0.32.5",
-    "vrchat-world-scraper": "github:phaze-the-dumb/vrchat-world-scraper"
+    "vrchat-world-scraper": "github:phaze-the-dumb/vrchat-world-scraper",
+    "windows-shortcuts": "^0.1.6"
   },
   "devDependencies": {
     "electron": "23.0.0",
