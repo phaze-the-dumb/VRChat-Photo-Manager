@@ -590,6 +590,7 @@ img{
   box-shadow: #0005 0 0 10px;
   overflow: hidden;
   text-align: center;
+  display: none;
 }
 
 .tray-header{
@@ -771,6 +772,7 @@ img{
   background: #5a5a5a31;
   backdrop-filter: blur(10px);
   display: none;
+  opacity: 0;
 }
 
 .jump-to-date-menu .center-container{
