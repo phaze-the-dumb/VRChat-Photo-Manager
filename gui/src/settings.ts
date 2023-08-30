@@ -186,6 +186,7 @@ let loadSettings = async () => {
     if(res.update && !showUpdaterWarning){
       showUpdaterWarning = true;
       document.querySelector<HTMLElement>('.updater')!.style.display = 'flex';
+      document.querySelector<HTMLElement>('#release-body')!.innerHTML = res.update.body.split('\r\n').join('<br />').split('*').join('');
 
       document.querySelector<HTMLElement>('#current-version')!.innerHTML = sres.version;
       document.querySelector<HTMLElement>('#update-version')!.innerHTML = res.update.tag_name;
