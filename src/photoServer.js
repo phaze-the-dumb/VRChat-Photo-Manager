@@ -261,6 +261,7 @@ fastify.register(async ( fastify ) => {
     reply.send({ ok: true,
       originPhotoPath: configData.vrcoutput, finalPhotoPath: configData.finalPhotoPath,
       version: require('../package.json').version, startWithWindows: configData.startWithWindows,
+      startInTray: configData.startInTray,
     });
   });
 
