@@ -151,6 +151,30 @@ let loadSettings = async () => {
   console.log('Loaded settings, now loading account stuff');
   loadAccountStuff();
 
+  document.querySelector<HTMLInputElement>('#start-with-windows')!.checked = res.startWithWindows;
+
+  document.querySelector<HTMLInputElement>('#start-with-windows')!.onchange = async () => {
+    let enabled = document.querySelector<HTMLInputElement>('#start-with-windows')!.checked;
+
+    let req = await fetch('http://127.0.0.1:53413/api/v1/settings/startWithWindows', { method: 'PUT', headers: { key: localStorage.getItem('token')!, 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled }) });
+    let res = await req.json();
+
+    if(!res.ok)
+      console.error(res);
+  }
+
+  document.querySelector<HTMLInputElement>('#start-in-tray')!.checked = res.startInTray;
+
+  document.querySelector<HTMLInputElement>('#start-in-tray')!.onchange = async () => {
+    let enabled = document.querySelector<HTMLInputElement>('#start-in-tray')!.checked;
+
+    let req = await fetch('http://127.0.0.1:53413/api/v1/settings/startInTray', { method: 'PUT', headers: { key: localStorage.getItem('token')!, 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled }) });
+    let res = await req.json();
+
+    if(!res.ok)
+      console.error(res);
+  }
+
   let sres = res;
 
   let i = setInterval(async () => {
@@ -162,6 +186,7 @@ let loadSettings = async () => {
     if(res.update && !showUpdaterWarning){
       showUpdaterWarning = true;
       document.querySelector<HTMLElement>('.updater')!.style.display = 'flex';
+      document.querySelector<HTMLElement>('#release-body')!.innerHTML = res.update.body.split('\r\n').join('<br />').split('*').join('');
 
       document.querySelector<HTMLElement>('#current-version')!.innerHTML = sres.version;
       document.querySelector<HTMLElement>('#update-version')!.innerHTML = res.update.tag_name;

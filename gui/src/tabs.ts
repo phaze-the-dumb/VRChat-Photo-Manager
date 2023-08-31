@@ -106,19 +106,37 @@ let openDropdownMenu = () => {
   })
 }
 
+let closeSettingsMenuAnim = () => {
+  anime({
+    targets: '.settings-container',
+    easing: 'linear',
+    opacity: 0,
+    translateY: '50px',
+    duration: 300,
+    complete: () =>
+      document.querySelector<HTMLElement>('.settings-container')!.style.display = 'none'
+  });
+}
+
 document.querySelector<HTMLElement>('#photos-tab')!.onclick = () => {
   if(inAnim || currentTab === 'photos')return;
   inAnim = true;
 
-  if(currentTab === 'settings'){
+  if(currentTab === 'settings')
+    closeSettingsMenuAnim();
+
+  if(currentTab === 'jumpdate'){
     anime({
-      targets: '.settings-container',
+      targets: '.jump-to-date-menu',
       easing: 'linear',
       opacity: 0,
-      translateY: '50px',
       duration: 300,
-      complete: () =>
-        document.querySelector<HTMLElement>('.settings-container')!.style.display = 'none'
+      complete: () => {
+        inAnim = false;
+
+        document.querySelector<HTMLElement>('#jump-to-date')!.classList.remove('nav-tab-selected');
+        document.querySelector<HTMLElement>('.jump-to-date-menu')!.style.display = 'none';
+      }
     });
   }
 
@@ -134,6 +152,80 @@ document.querySelector<HTMLElement>('#photos-tab')!.onclick = () => {
     complete: () => {
       document.querySelector<HTMLElement>('#photos-tab')!.classList.add('nav-tab-selected');
       inAnim = false;
+    }
+  });
+}
+
+document.querySelector<HTMLElement>('.jump-to-date-menu')!.onclick = () => {
+  if(inAnim || currentTab === 'photos')return;
+  inAnim = true;
+
+  if(currentTab === 'settings')
+    closeSettingsMenuAnim();
+
+  if(currentTab === 'jumpdate'){
+    anime({
+      targets: '.jump-to-date-menu',
+      easing: 'linear',
+      opacity: 0,
+      duration: 300,
+      complete: () => {
+        inAnim = false;
+
+        document.querySelector<HTMLElement>('#jump-to-date')!.classList.remove('nav-tab-selected');
+        document.querySelector<HTMLElement>('.jump-to-date-menu')!.style.display = 'none';
+      }
+    });
+  }
+
+  document.querySelector<HTMLElement>('.image-container')!.style.display = 'block';
+  currentTab = 'photos';
+
+  anime({
+    targets: '.image-container',
+    easing: 'linear',
+    opacity: 1,
+    translateY: '0px',
+    duration: 300,
+    complete: () => {
+      document.querySelector<HTMLElement>('#photos-tab')!.classList.add('nav-tab-selected');
+      inAnim = false;
+    }
+  });
+}
+
+document.querySelector<HTMLElement>('#jump-to-date')!.onclick = () => {
+  if(inAnim || currentTab === 'jumpdate')return;
+  inAnim = true;
+
+  if(currentTab === 'settings'){
+    closeSettingsMenuAnim();
+
+    anime({
+      targets: '.image-container',
+      easing: 'linear',
+      opacity: 1,
+      translateY: '0px',
+      duration: 300
+    });
+  }
+
+  if(currentTab === 'photos')
+    document.querySelector<HTMLElement>('#photos-tab')!.classList.remove('nav-tab-selected');
+
+  document.querySelector<HTMLElement>('.image-container')!.style.display = 'block';
+  document.querySelector<HTMLElement>('.jump-to-date-menu')!.style.display = 'block';
+
+  currentTab = 'jumpdate';
+
+  anime({
+    targets: '.jump-to-date-menu',
+    easing: 'linear',
+    opacity: 1,
+    duration: 300,
+    complete: () => {
+      inAnim = false;
+      document.querySelector<HTMLElement>('#jump-to-date')!.classList.add('nav-tab-selected');
     }
   });
 }

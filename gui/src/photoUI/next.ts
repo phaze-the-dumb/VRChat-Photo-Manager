@@ -1,4 +1,4 @@
-let regButton = ( currentPhotoIndex: () => number, images: () => HTMLImageElement[], photos: () => any[], closeImageUI: ( tray: boolean ) => void, showImageUI: ( photo: any, img: HTMLImageElement, index: number ) => void, loadAnotherImage: () => void ) => {
+let regButton = ( currentPhotoIndex: () => number, images: () => HTMLImageElement[], photos: () => any[], closeImageUI: ( tray: boolean ) => void, showImageUI: ( photo: any, img: HTMLImageElement, index: number ) => void, loadImage: ( index: number, image?: HTMLElement ) => void ) => {
   document.querySelector<HTMLElement>('.next-image-button')!.onclick = () => {
     if(currentPhotoIndex() == photos().length - 1)return;
 
@@ -6,7 +6,7 @@ let regButton = ( currentPhotoIndex: () => number, images: () => HTMLImageElemen
     closeImageUI(true);
 
     if(!images()[newIndex])
-      loadAnotherImage();
+      loadImage(newIndex);
 
     showImageUI(photos()[newIndex], images()[newIndex], newIndex);
   }
