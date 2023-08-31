@@ -15,7 +15,7 @@ import statsButton from './photoUI/stats';
 import deleteButton from './photoUI/delete';
 import peopleButton from './photoUI/people';
 
-import { getCurrentTab, loggedIn } from './tabs';
+import { loggedIn } from './tabs';
 import { loadSettings, isLoggedIn } from './settings';
 
 isLoggedIn(() => loggedIn());
@@ -27,60 +27,65 @@ let lastPhotoIndex = -1;
 let lastGroupDates: Array<string> = [];
 let currentGroupDate = "";
 let images: Array<HTMLImageElement> = [];
+let imageContainers: Array<HTMLElement> = [];
+let targetScroll = 0;
+let currentScroll = 0;
+let lerp = ( x: number, y: number, a: number ) => x * (1 - a) + y * a;
+let windowSize = { x: window.innerWidth, y: window.innerHeight };
 
-let loadAnotherImage = () => {
-  if(getCurrentTab() !== 'photos')return;
+window.addEventListener('resize', () => {
+  windowSize.x = window.innerWidth;
+  windowSize.y = window.innerHeight;
+})
 
-  let div = document.createElement('div');
-  div.className = 'image-wrapper';
+imageContainer.onwheel = ( e: WheelEvent ) => {
+  e.preventDefault();
+  targetScroll += e.deltaY;
 
-  lastPhotoIndex++;
-  let photo = photos[lastPhotoIndex];
-  if(!photo)return;
+  if(targetScroll < 0)
+    targetScroll = 0;
+}
 
-  photo.index = lastPhotoIndex;
-  photo.getIndex = () => photo.index;
+imageContainer.onscroll = ( e: Event ) => {
+  e.preventDefault();
 
-  let date = new Date(photo.timestamp);
+  imageContainers.forEach((image: HTMLElement, index: number) => {
+    let rect = image.getBoundingClientRect();
+    let top = rect.y;
 
-  if(currentGroupDate != date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear()) {
-    let title = document.createElement('div');
-    title.className = 'group-title';
-    title.innerHTML = days[date.getDay()] + ' ' + date.getDate() + '<sup class="smol-date">'+place(date.getDate().toString())+'</sup> ' + months[date.getMonth()] + ' <span class="smol-date">' + date.getFullYear() + "</span>";
+    if(top + 200 < 0 || top > windowSize.y){
+      if(images[index])
+        images[index].style.display = 'none';
+    } else{
+      if(!images[index])
+        loadAnotherImage(index, image);
 
-    anime({
-      targets: title,
-      opacity: 1,
-      duration: 500,
-      easing: 'linear',
-      translateY: '0px'
-    })
+      images[index].style.display = 'inline-block';
+    }
+  });
+}
 
-    imageContainer.appendChild(title);
+let loadAnotherImage = ( index: number, image?: HTMLElement ) => {
+  let photo = photos[index];
 
-    lastGroupDates.push(date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear());
-    currentGroupDate = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
-  }
+  if(!image)
+    image = imageContainers[index];
 
   let img = document.createElement('img');
   img.crossOrigin = 'anonymous';
   img.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/scaled?key=' + localStorage.getItem('token')!;
   img.draggable = false;
 
-  imageContainer.appendChild(div);
-  div.appendChild(img);
-  images.push(img);
+  image.appendChild(img);
+  images[index] = img;
 
-  div.style.height = '200px';
-  div.style.width = Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px';
-
-  div.onclick = () => {
+  image.onclick = () => {
     if(isCtxMenuOpen)return closeCtxMenu();
 
     showPhotoUI( photo, img, photo.getIndex() );
   }
 
-  div.oncontextmenu = ( e ) => {
+  image.oncontextmenu = ( e ) => {
     e.preventDefault();
 
     if(isCtxMenuOpen)return closeCtxMenu(() => showContextMenuImage( photo, img, e ));
@@ -88,9 +93,11 @@ let loadAnotherImage = () => {
   }
 
   img.onload = () => {
-    anime.set(div, { translateY: '10px' });
+    if(!image)return;
+
+    anime.set(image, { translateY: '10px' });
     anime({
-      targets: div,
+      targets: image,
       opacity: 1,
       duration: 500,
       easing: 'linear',
@@ -105,15 +112,110 @@ let loadImages = async () => {
 
   photos = res.pictures;
 
+  let dates = [];
+
+  let index = 0;
+  for(let photo of photos){
+    let div = document.createElement('div');
+    div.className = 'image-wrapper';
+
+    photo.index = index;
+    photo.getIndex = () => photo.index;
+
+    index++;
+    let date = new Date(photo.timestamp);
+
+    if(currentGroupDate != date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear()) {
+      let title = document.createElement('div');
+      title.className = 'group-title';
+      title.innerHTML = '<span id="scroll-to-'+photo.timestamp+'"></span>' + days[date.getDay()] + ' ' + date.getDate() + '<sup class="smol-date">'+place(date.getDate().toString())+'</sup> ' + months[date.getMonth()] + ' <span class="smol-date">' + date.getFullYear() + "</span>";
+
+      let dateStr = '<div class="date" id="photo-date-'+photo.timestamp+'">'+days[date.getDay()]+' '+date.getDate()+'<sup class="date-sub-text">'+place(date.getDate().toString())+'</sup> '+months[date.getMonth()]+' <span class="date-sub-text">'+date.getFullYear()+'</span></div>';
+      dates.push(dateStr);
+
+      anime({
+        targets: title,
+        opacity: 1,
+        duration: 500,
+        easing: 'linear',
+        translateY: '0px'
+      })
+  
+      imageContainer.appendChild(title);
+  
+      lastGroupDates.push(date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear());
+      currentGroupDate = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
+    }
+
+    imageContainer.appendChild(div);
+    imageContainers.push(div);
+
+    div.style.height = '200px';
+    div.style.width = Math.floor(photo.res[0] * ( 200 / photo.res[1] )) + 'px';
+  }
+
+  document.querySelector<HTMLElement>('.dates')!.innerHTML = dates.join('');
+
+  for(let photo of photos){
+    let el = document.querySelector<HTMLElement>('#photo-date-'+photo.timestamp)!;
+    if(!el)continue;
+
+    el.onclick = () => {
+      console.log('scrolling to: '+photo.timestamp);
+      targetScroll = currentScroll + document.querySelector('#scroll-to-'+photo.timestamp)!.getBoundingClientRect().y - 50;
+    }
+  }
+
   if(photos.length === 0){
     document.querySelector<HTMLElement>('.image-container')!.innerHTML = '<div class="no-photo-warning">You seem to have no photos.<br />Take some in vrchat!<br /><br />If you are sure that you have photos, OR you have just updated, Please restart the app (its a bug and i have no idea how to fix it)</div>'
     return;
   }
 
-  setInterval(() => {
-    if(imageContainer.offsetHeight + imageContainer.scrollTop >= imageContainer.scrollHeight - 400)
-      loadAnotherImage();
-  }, 50);
+  let index2 = 0;
+  while(true){
+    let photo = photos[index2];
+    let image = imageContainers[index2];
+
+    if(!photo)break;
+
+    let img = document.createElement('img');
+    img.crossOrigin = 'anonymous';
+    img.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/scaled?key=' + localStorage.getItem('token')!;
+    img.draggable = false;
+
+    image.appendChild(img);
+    images[index2] = img;
+
+    image.onclick = () => {
+      if(isCtxMenuOpen)return closeCtxMenu();
+
+      showPhotoUI( photo, img, photo.getIndex() );
+    }
+
+    image.oncontextmenu = ( e ) => {
+      e.preventDefault();
+
+      if(isCtxMenuOpen)return closeCtxMenu(() => showContextMenuImage( photo, img, e ));
+      showContextMenuImage( photo, img, e );
+    }
+  
+    img.onload = () => {
+      anime.set(image, { translateY: '10px' });
+      anime({
+        targets: image,
+        opacity: 1,
+        duration: 500,
+        easing: 'linear',
+        translateY: '0px'
+      })
+    }
+
+    console.log(image.getBoundingClientRect().y > windowSize.y + 300, image.getBoundingClientRect().y + 300, windowSize.y)
+    if(image.getBoundingClientRect().y > windowSize.y + 300)
+      break;
+
+    index2++;
+  }
 }
 
 let authThread = async () => {
@@ -317,6 +419,13 @@ let authThread = async () => {
   }
 }
 
+let update = () => {
+  requestAnimationFrame(update);
+
+  currentScroll = lerp(currentScroll, targetScroll, 0.1);
+  imageContainer.scrollTop = currentScroll;
+}
+
 copyButton.regButton(() => enlargedImage!);
 shareButton.regButton(setTray, () => trayOpen);
 warningsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
@@ -324,7 +433,8 @@ infoButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 deleteButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 statsButton.regButton(setTray, () => trayOpen, () => currentPhoto);
 peopleButton.regButton(setTray, () => trayOpen, () => currentPhoto);
-prevButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUINoAnim, showPhotoUINoAnim);
+prevButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUINoAnim, showPhotoUINoAnim, loadAnotherImage);
 nextButton.regButton(getPhotoIndex, () => images, () => photos, closeImageUINoAnim, showPhotoUINoAnim, loadAnotherImage);
 
 authThread();
+update();

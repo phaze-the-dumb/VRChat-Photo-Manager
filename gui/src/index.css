@@ -178,6 +178,7 @@ img{
   overflow-x: hidden;
   overflow-y: auto;
   text-align: center;
+  scroll-behavior: none;
 }
 
 .image-wrapper{
@@ -784,6 +785,7 @@ img{
   padding: 10px;
   transform: translate(-50%, -50%);
   border-radius: 10px;
+  text-align: center;
 }
 
 .date-title{
@@ -847,6 +849,42 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.date-sub-text{
+  font-size: 12px;
+  color: #aaa;
+}
+
+.date{
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.1s;
+  border-radius: 5px;
+}
+
+.date:hover{
+  background: #fff5;
+  box-shadow: #0005 0 0 10px;
+}
+
+.dates{
+  padding: 105px 0;
+  width: 300px;
+  height: 250px;
+  overflow: auto;
+  color: #fff;
+  -webkit-mask-image: linear-gradient(to bottom, #0000, #000, #0000);
+  mask-image: linear-gradient(to bottom, #0000, #000, #0000);
+}
+
+.dates::-webkit-scrollbar{
+  display: none;
+}
+
+.image-container::-webkit-scrollbar{
+  display: none;
 }
 
 @keyframes loading {
