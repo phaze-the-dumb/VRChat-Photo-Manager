@@ -19,7 +19,7 @@ let showContextMenuImageView = ( photo: any, img: HTMLImageElement, e: MouseEven
   menu.style.top = e.clientY + 'px';
 
   let menuItems: any = {
-    'Copy Image': () => {
+    'Copy Image (1080p)': () => {
       let canvas = document.createElement('canvas');
       let ctx = canvas.getContext('2d');
 
@@ -53,6 +53,47 @@ let showContextMenuImageView = ( photo: any, img: HTMLImageElement, e: MouseEven
           })
         }, 2500);
       });
+    },
+    'Copy Image': () => {
+      let fullImage = document.createElement('img');
+      fullImage.crossOrigin = 'anonymous';
+      fullImage.src = 'http://127.0.0.1:53413/api/v1/photos/' + photo.timestamp + '/full?key=' + localStorage.getItem('token')!;
+
+      fullImage.onload = () => {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+
+        canvas.width = fullImage.width;
+        canvas.height = fullImage.height;
+
+        ctx?.drawImage(fullImage, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(( blob ) => {
+          navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': blob!
+            })
+          ]);
+
+          canvas.remove();
+          closeCtxMenu();
+
+          anime.set('.notification-copy', { translateX: '-50%', translateY: '-50px' });
+          anime({
+            targets: '.notification-copy',
+            opacity: 1,
+            translateY: 0,
+          })
+
+          setTimeout(() => {
+            anime({
+              targets: '.notification-copy',
+              opacity: 0,
+              translateY: '-50px',
+            })
+          }, 2500);
+        });
+      }
     },
     'Open File Location': () => {
       fetch('http://127.0.0.1:53413/api/v1/photos/'+photo.timestamp+'/open?key='+localStorage.getItem('token')!).then(() => closeCtxMenu());
