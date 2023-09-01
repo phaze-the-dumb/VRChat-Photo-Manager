@@ -28,6 +28,7 @@ let lastGroupDates: Array<string> = [];
 let currentGroupDate = "";
 let images: Array<HTMLImageElement> = [];
 let imageContainers: Array<HTMLElement> = [];
+let dateContainers: Array<HTMLElement> = [];
 let targetScroll = 0;
 let currentScroll = 0;
 let lerp = ( x: number, y: number, a: number ) => x * (1 - a) + y * a;
@@ -48,19 +49,21 @@ imageContainer.onwheel = ( e: WheelEvent ) => {
 
 imageContainer.onscroll = ( e: Event ) => {
   e.preventDefault();
+}
 
+let loadImagesInFrame = () => {
   imageContainers.forEach((image: HTMLElement, index: number) => {
     let rect = image.getBoundingClientRect();
     let top = rect.y;
 
     if(top + 200 < 0 || top > windowSize.y){
-      if(images[index])
-        images[index].style.display = 'none';
+      // if(images[index])
+        // images[index].style.display = 'none'; - Was causing ui flickering, need to find a fix (but shouldn't chromium do this automatically?)
     } else{
       if(!images[index])
         loadAnotherImage(index, image);
 
-      images[index].style.display = 'inline-block';
+      // images[index].style.display = 'inline-block';
     }
   });
 }
@@ -144,6 +147,7 @@ let loadImages = async () => {
       imageContainer.appendChild(title);
   
       lastGroupDates.push(date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear());
+      dateContainers.push(title);
       currentGroupDate = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
     }
 
@@ -162,7 +166,7 @@ let loadImages = async () => {
 
     el.onclick = () => {
       console.log('scrolling to: '+photo.timestamp);
-      targetScroll = currentScroll + document.querySelector('#scroll-to-'+photo.timestamp)!.getBoundingClientRect().y - 50;
+      targetScroll = currentScroll + document.querySelector('#scroll-to-'+photo.timestamp)!.getBoundingClientRect().y - 60;
     }
   }
 
@@ -282,7 +286,22 @@ let authThread = async () => {
           if(lastGroupDates[0] != date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear()) {
             let title = document.createElement('div');
             title.className = 'group-title';
+            title.id = 'scroll-to-'+photo.timestamp;
             title.innerHTML = days[date.getDay()] + ' ' + date.getDate() + '<sup class="smol-date">'+place(date.getDate().toString())+'</sup> ' + months[date.getMonth()] + ' <span class="smol-date">' + date.getFullYear() + "</span>";
+
+            let dateStr = days[date.getDay()]+' '+date.getDate()+'<sup class="date-sub-text">'+place(date.getDate().toString())+'</sup> '+months[date.getMonth()]+' <span class="date-sub-text">'+date.getFullYear()+'</span>';
+            let dateDiv = document.createElement('div');
+
+            dateDiv.innerHTML = dateStr;
+            dateDiv.className = 'date';
+            dateDiv.id = 'photo-date-'+photo.timestamp;
+
+            document.querySelector('.dates')!.insertBefore(dateDiv, document.querySelector('.dates')!.firstChild);
+
+            dateDiv.onclick = () => {
+              console.log('scrolling to: '+photo.timestamp);
+              targetScroll = currentScroll + document.querySelector('#scroll-to-'+photo.timestamp)!.getBoundingClientRect().y - 60;
+            }
 
             anime({
               targets: title,
@@ -295,6 +314,8 @@ let authThread = async () => {
             imageContainer.insertBefore(title, imageContainer.childNodes[0]);
 
             lastGroupDates.splice(0, 0, date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear());
+            dateContainers.splice(0, 0, title);
+
             currentGroupDate = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
           }
         
@@ -354,8 +375,15 @@ let authThread = async () => {
             console.log('Removing group title');
             images[index].parentElement!.previousSibling!.remove();
 
-            lastGroupDates.shift();
-            currentGroupDate = lastGroupDates[lastGroupDates.length - 1];
+            let date = new Date(photos[index].timestamp);
+
+            let indx = lastGroupDates.indexOf(date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear());
+            dateContainers[indx].remove();
+
+            dateContainers.splice(indx, 1);
+            lastGroupDates.splice(indx, 1);
+
+            document.querySelector('.dates')!.children[indx].remove();
           }
 
           images[index].parentElement!.remove();
@@ -424,6 +452,8 @@ let update = () => {
 
   currentScroll = lerp(currentScroll, targetScroll, 0.1);
   imageContainer.scrollTop = currentScroll;
+
+  loadImagesInFrame();
 }
 
 copyButton.regButton(() => enlargedImage!);
