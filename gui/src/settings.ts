@@ -140,7 +140,7 @@ let finalStorageLocation = setupStorageSetting('final-storage-location', async (
 let showStorageWarning = false;
 let showUpdaterWarning = false;
 
-let loadSettings = async () => {
+let loadSettings = async ( setScrollSmoothness: ( amount: number ) => void ) => {
   let req = await fetch('http://127.0.0.1:53413/api/v1/settings', { headers: { key: localStorage.getItem('token')! } });
   let res = await req.json();
 
@@ -152,6 +152,25 @@ let loadSettings = async () => {
   loadAccountStuff();
 
   document.querySelector<HTMLInputElement>('#start-with-windows')!.checked = res.startWithWindows;
+
+  document.querySelector<HTMLInputElement>('#scroll-smoothness')!.value = res.scrollSmoothness;
+  document.querySelector<HTMLInputElement>('#scroll-smoothness-amount')!.innerHTML = res.scrollSmoothness;
+
+  document.querySelector<HTMLInputElement>('#scroll-smoothness')!.oninput = () => {
+    document.querySelector<HTMLInputElement>('#scroll-smoothness-amount')!.innerHTML = document.querySelector<HTMLInputElement>('#scroll-smoothness')!.value;
+  }
+
+  document.querySelector<HTMLInputElement>('#scroll-smoothness')!.onchange = async () => {
+    let value = document.querySelector<HTMLInputElement>('#scroll-smoothness')!.value;
+    setScrollSmoothness(parseFloat(value));
+    console.log(value, parseFloat(value));
+
+    let req = await fetch('http://127.0.0.1:53413/api/v1/settings/scrollSmoothness', { method: 'PUT', headers: { key: localStorage.getItem('token')!, 'Content-Type': 'application/json' }, body: JSON.stringify({ value }) });
+    let res = await req.json();
+
+    if(!res.ok)
+      console.error(res);
+  }
 
   document.querySelector<HTMLInputElement>('#start-with-windows')!.onchange = async () => {
     let enabled = document.querySelector<HTMLInputElement>('#start-with-windows')!.checked;
