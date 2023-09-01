@@ -222,6 +222,24 @@ fastify.register(async ( fastify ) => {
     reply.send({ ok: true });
   });
 
+  fastify.put('/api/v1/settings/scrollSmoothness', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key, Content-Type');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, message: 'Invaild Key.' });
+
+    if(!req.body || !req.body.value)return reply.send({ ok: false, message: 'Invaild Value.' });
+
+    configData.scrollSmoothness = req.body.value;
+    fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(configData));
+
+    reply.send({ ok: true });
+  });
+
   fastify.put('/api/v1/settings/finalPhotoPath', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -261,7 +279,7 @@ fastify.register(async ( fastify ) => {
     reply.send({ ok: true,
       originPhotoPath: configData.vrcoutput, finalPhotoPath: configData.finalPhotoPath,
       version: require('../package.json').version, startWithWindows: configData.startWithWindows,
-      startInTray: configData.startInTray,
+      startInTray: configData.startInTray, scrollSmoothness: configData.scrollSmoothness
     });
   });
 

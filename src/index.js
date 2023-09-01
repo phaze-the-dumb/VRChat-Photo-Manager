@@ -45,6 +45,11 @@ if(!config.logToFile){
   configNeedsSaving = true;
 }
 
+if(!config.scrollSmoothness){
+  config.scrollSmoothness = 0.1;
+  configNeedsSaving = true;
+}
+
 if(configNeedsSaving)
   fs.writeFileSync(os.homedir() + '/AppData/Roaming/PhazeDev/.config/vrcphotos.json', JSON.stringify(config));
 

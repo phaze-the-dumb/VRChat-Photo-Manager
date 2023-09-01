@@ -33,6 +33,7 @@ let targetScroll = 0;
 let currentScroll = 0;
 let lerp = ( x: number, y: number, a: number ) => x * (1 - a) + y * a;
 let windowSize = { x: window.innerWidth, y: window.innerHeight };
+let scrollSmoothness = 0.1;
 
 window.addEventListener('resize', () => {
   windowSize.x = window.innerWidth;
@@ -251,7 +252,7 @@ let authThread = async () => {
           })
 
           loadImages();
-          loadSettings();
+          loadSettings(( amount: number ) => { scrollSmoothness = amount } );
         }
       })
     }
@@ -450,7 +451,7 @@ let authThread = async () => {
 let update = () => {
   requestAnimationFrame(update);
 
-  currentScroll = lerp(currentScroll, targetScroll, 0.1);
+  currentScroll = lerp(currentScroll, targetScroll, scrollSmoothness);
   imageContainer.scrollTop = currentScroll;
 
   loadImagesInFrame();
