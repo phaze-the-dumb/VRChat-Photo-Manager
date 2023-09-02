@@ -887,6 +887,81 @@ input:checked + .slider:before {
   display: none;
 }
 
+.share-menu{
+  padding: 20px;
+  background: #333;
+  margin: 0 50px;
+  border-radius: 20px;
+  display: none;
+}
+
+.share-code{
+  padding: 5px 10px;
+  background: #111;
+  color: white;
+  font-size: 18px;
+  border: none;
+  outline: none;
+  width: 150px;
+  text-align: center;
+  margin: 0 5px;
+}
+
+.tip{
+  font-size: 12px;
+}
+
+#share-input{
+  background: none;
+  border: none;
+  outline: none;
+  color: white;
+  border-bottom: white 2px solid;
+  width: 75px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.share-user .user-avatar{
+  width: 35px;
+  height: 35px;
+  background: red;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.share-user{
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-not-found{
+  display: none;
+  text-align: center;
+}
+
+#image-share-button{
+  display: none;
+}
+
+.share-confirm{
+  background: #00718d;
+  width: fit-content;
+  text-align: center;
+  display: none;
+  padding: 5px 20px;
+  margin-top: 5px;
+  border-radius: 10px;
+  transition: 0.1s;
+  cursor: pointer;
+  user-select: none;
+}
+
+.share-confirm:hover{
+  background: #00ccff;
+}
+
 @keyframes loading {
   0% {
     transform: translate(0, -10px) scale(1, 1);

@@ -18,7 +18,6 @@ let showPhotoUINoAnim = ( photo: any, img: HTMLImageElement, index: number ) => 
   if(document.querySelector<HTMLElement>(".image-view")!.style.display === 'block')
     return;
 
-
   let c = img.parentElement!;
   imgBoundingPos = img.getBoundingClientRect();
 

@@ -274,6 +274,7 @@ let authThread = async () => {
           let div = document.createElement('div');
           div.className = 'image-wrapper';
 
+          imageContainers.splice(0, 0, div);
           lastPhotoIndex++;
 
           let photo = photos[0];
@@ -387,8 +388,13 @@ let authThread = async () => {
             document.querySelector('.dates')!.children[indx].remove();
           }
 
+          console.log(imageContainers);
+
           images[index].parentElement!.remove();
           photos = photos.filter(( p: any ) => p.timestamp !== msg.id);
+          
+          images.splice(index, 1);
+          imageContainers.splice(index, 1);
 
           if(currentPhoto && msg.id === currentPhoto.timestamp)
             closeImageUI();
