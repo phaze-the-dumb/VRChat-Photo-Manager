@@ -175,6 +175,14 @@ fastify.register(async ( fastify ) => {
     reply.send("GET");
   });
 
+  fastify.options('/api/v1/share', ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    reply.send("GET");
+  });
+
   fastify.put('/api/v1/settings/startInTray', ( req, reply ) => {
     reply.header('Content-Type', 'application/json');
     reply.header('Access-Control-Allow-Origin', '*');
@@ -321,6 +329,28 @@ fastify.register(async ( fastify ) => {
     if(!code)return reply.send({ ok: false, error: 'Invalid code.' });
 
     let preq = await fetch('https://photos.phazed.xyz/api/v1/user/byCode?code='+code, { headers: { auth: configData.token } });
+    let pres = await preq.json();
+
+    reply.send(pres);
+  });
+
+  fastify.get('/api/v1/share', async ( req, reply ) => {
+    reply.header('Content-Type', 'application/json');
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Headers', 'key');
+
+    let key = req.headers.key;
+    if(!key)return reply.send({ ok: false, error: 'Invaild Key.' });
+    key = keys.find(k => k.key === key);
+    if(!key)return reply.send({ ok: false, error: 'Invaild Key.' });
+
+    let code = req.query.code;
+    if(!code)return reply.send({ ok: false, error: 'Invalid code.' });
+
+    let name = req.query.name;
+    if(!name)return reply.send({ ok: false, error: 'Invalid photo.' });
+
+    let preq = await fetch('https://photos.phazed.xyz/api/v1/share?code='+code+'&photo='+name, { headers: { auth: configData.token } });
     let pres = await preq.json();
 
     reply.send(pres);
@@ -702,9 +732,11 @@ fastify.register(async ( fastify ) => {
 
 fastify.listen({ port: 53413, host: '127.0.0.1' }, ( err, address ) => {
   if(err){
+    console.error(err);
+
     isAlreadyRunning = true;
     console.error(new Error("App already running."));
-    process.exit(1);
+    // process.exit(1);
   }
 });
 
