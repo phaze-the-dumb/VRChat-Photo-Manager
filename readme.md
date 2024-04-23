@@ -4,8 +4,6 @@
 
 # VRChat Photo Manager
 
-Install [HERE](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Installer)
-
-Uhh... Still WIP!
+~~Install [HERE](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Installer)~~ < This installer now installs the new rust re-write
 
 [VRChat Photo Manager Server](https://github.com/phaze-the-dumb/VRChat-Photo-Server)
