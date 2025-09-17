@@ -1,7 +1,8 @@
-use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::str;
 
-#[derive(Clone)]
+use serde::Serialize;
+
+#[derive(Clone, Debug, Serialize)]
 pub struct PNGImage {
   pub width: u32,
   pub height: u32,
@@ -12,10 +13,11 @@ pub struct PNGImage {
   pub interlace_method: u8,
   pub metadata: String,
   pub path: String,
+  pub error: bool
 }
 
 impl PNGImage {
-  pub fn new(buff: Vec<u8>, path: String) -> PNGImage {
+  pub fn new(buff: Vec<u8>, path: String) -> Result<PNGImage, &'static str> {
     if buff[0] != 0x89
       || buff[1] != 0x50
       || buff[2] != 0x4E
@@ -26,7 +28,7 @@ impl PNGImage {
       || buff[7] != 0x0A
     {
       dbg!(path);
-      panic!("Image is not a PNG file");
+      return Err("Image is not a PNG file");
     }
 
     let mut img = PNGImage {
@@ -39,10 +41,11 @@ impl PNGImage {
       interlace_method: 0,
       metadata: "".to_string(),
       path: path,
+      error: false
     };
 
     img.read_png_chunk(8, buff);
-    img
+    Ok(img)
   }
 
   fn read_png_chunk(&mut self, start_byte: usize, buff: Vec<u8>) {
@@ -80,24 +83,5 @@ impl PNGImage {
         self.read_png_chunk((length + 12) as usize, data_buff);
       }
     }
-  }
-}
-
-impl Serialize for PNGImage {
-  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-  where
-    S: Serializer,
-  {
-    let mut s = serializer.serialize_struct("PNGImage", 7)?;
-    s.serialize_field("width", &self.width)?;
-    s.serialize_field("height", &self.height)?;
-    s.serialize_field("bit_depth", &self.bit_depth)?;
-    s.serialize_field("colour_type", &self.colour_type)?;
-    s.serialize_field("compression_method", &self.compression_method)?;
-    s.serialize_field("filter_method", &self.filter_method)?;
-    s.serialize_field("interlace_method", &self.interlace_method)?;
-    s.serialize_field("metadata", &self.metadata)?;
-    s.serialize_field("path", &self.path)?;
-    s.end()
   }
 }

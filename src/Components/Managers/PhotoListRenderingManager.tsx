@@ -127,7 +127,17 @@ export class PhotoListRenderingManager{
             // ctx.strokeStyle = '#f00';
             // ctx.strokeRect((rowXPos - row.Width / 2) + canvas.width / 2, currentY - scroll, photo.scaledWidth!, row.Height);
 
-            if(!photo.loaded)
+            if(photo.error){
+              ctx.fillStyle = '#fff';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+
+              photo.x = (rowXPos  - row.Width / 2) + canvas.width / 2;
+              photo.y = currentY - scroll;
+
+              ctx.font = '18px Rubik'
+              ctx.fillText('Error loading image.', photo.x + photo.scaledWidth! / 2, photo.y + photo.scaledHeight! / 2);
+            } else if(!photo.loaded)
               // If the photo is not loaded, start a new task and load it in that task
               setTimeout(() => photo.loadImage(), 1);
             else{

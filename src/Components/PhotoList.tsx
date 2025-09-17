@@ -162,10 +162,17 @@ let PhotoList = () => {
   onMount(() => {
     // Update Stuff
     fetch('https://api.github.com/repos/phaze-the-dumb/VRChat-Photo-Manager/releases/latest')
-      .then(data => data.json())
-      .then(async data => {
-        let currentVersion = await invoke('get_version');
-        setUpdateAvailable(data.tag_name !== currentVersion);
+      .then(data => {
+        if(data.status !== 200)return;
+
+        data.json().then(async data => {
+          let currentVersion = await invoke('get_version');
+          setUpdateAvailable(data.tag_name !== currentVersion);
+        })
+      })
+      .catch(e => {
+        console.error(e);
+        setUpdateAvailable(false);
       })
 
     // Other Stuff

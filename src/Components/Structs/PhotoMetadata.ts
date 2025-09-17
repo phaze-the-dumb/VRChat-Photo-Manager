@@ -3,4 +3,5 @@ export class PhotoMetadata{
   height!: number;
   metadata!: string;
   path!: string;
+  error!: boolean;
 }

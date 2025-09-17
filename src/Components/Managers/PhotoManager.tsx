@@ -112,6 +112,7 @@ export class PhotoManager{
       //       we don't need to store metadata of those photos as they inherit this
       //       data from the main photo.
 
+      photo.error = data.error;
       this._lastLoaded = photo.index;
 
       if(this._onLoadedMeta[photo.index]){
@@ -129,7 +130,8 @@ export class PhotoManager{
   
       photo.metadata = data.metadata.split('\u0000').filter(x => x !== '')[1];
       this._amountLoaded++;
-  
+
+      photo.loadingMeta = false;
       photo.metaLoaded = true;
       photo.onMetaLoaded();
 

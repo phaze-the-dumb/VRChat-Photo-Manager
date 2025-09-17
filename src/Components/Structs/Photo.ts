@@ -6,6 +6,7 @@ let imagesLoading = 0;
 export class Photo{
   path: string;
   loaded: boolean = false;
+  loadingMeta: boolean = false;
   loading: boolean = false;
   metaLoaded: boolean = false;
   image?: HTMLCanvasElement;
@@ -14,6 +15,8 @@ export class Photo{
   height?: number;
   loadingRotate: number = 0;
   metadata: any;
+
+  error: boolean = false;
 
   frames: number = 0;
   shown: boolean = false;
@@ -90,17 +93,15 @@ export class Photo{
   }
 
   loadMeta(){
+    this.loadingMeta = true;
     invoke('load_photo_meta', { photo: this.path });
   }
 
   loadImage(){
-    if(this.loading || this.loaded || imagesLoading >= Vars.MAX_IMAGE_LOAD)return;
-
-    // this.loadMeta();
+    if(this.loadingMeta || this.loading || this.loaded || imagesLoading >= Vars.MAX_IMAGE_LOAD)return;
     if(!this.metaLoaded)return this.loadMeta();
 
     this.loading = true;
-
     imagesLoading++;
 
     this.image = document.createElement('canvas');
@@ -120,6 +121,10 @@ export class Photo{
       this.loading = false;
 
       imagesLoading--;
+    }
+
+    this.imageEl.onerror = () => {
+      console.log('Cannot load image');
     }
   }
 }

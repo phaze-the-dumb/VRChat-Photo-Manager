@@ -118,3 +118,7 @@ v0.2.6:
 
   - Remove all sync stuff
   - Removed automatic updates
+
+v0.2.7:
+  - Fixed loading when an image file is corrupted
+  - Fixed update prompt when not connected to internet
