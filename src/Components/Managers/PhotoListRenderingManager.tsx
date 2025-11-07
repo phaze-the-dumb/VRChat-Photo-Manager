@@ -63,7 +63,7 @@ export class PhotoListRenderingManager{
 
   public Render( ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, scroll: number ){
     let currentY = 0;
-    
+
     // Loop through each row
     for (let i = 0; i < this._layout.length; i++) {
       let row = this._layout[i];

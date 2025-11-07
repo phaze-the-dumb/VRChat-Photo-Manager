@@ -11,23 +11,23 @@ edition = "2021"
 tauri-build = { version = "2.0.0-rc", features = [] }
 
 [dependencies]
-tauri = { version = "2.7.0", features = [ "tray-icon", "image-png", "devtools" ] }
+tauri = { version = "2.9", features = [ "tray-icon", "image-png", "devtools" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-open = "5.1.2"
-dirs = "5.0.1"
-notify = "6.1.1"
-regex = "1.10.4"
+open = "5.3"
+dirs = "6.0"
+notify = "8.2"
+regex = "1.12"
 reqwest = { version = "0.12", features = ["blocking"] }
-image = "0.25.2"
-fast_image_resize = { version = "4.2.1", features = [ "image" ] }
-arboard = "3.6.0"
-tauri-plugin-single-instance = { version = "2.3.2", features = ["deep-link"] }
-tauri-plugin-shell = "2.3.0"
-tauri-plugin-http = "2.5.1"
-tauri-plugin-process = "2.3.0"
+image = "0.25"
+fast_image_resize = { version = "5.3", features = [ "image" ] }
+arboard = "3.6"
+tauri-plugin-single-instance = { version = "2.3", features = ["deep-link"] }
+tauri-plugin-shell = "2.3"
+tauri-plugin-http = "2.5"
+tauri-plugin-process = "2.3"
 [target.'cfg(windows)'.dependencies]
-mslnk = { version = "0.1.8" }
+mslnk = { version = "0.1" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
