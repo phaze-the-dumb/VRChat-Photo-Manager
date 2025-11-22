@@ -6,7 +6,7 @@ import { animate, utils } from "animejs";
 
 let SettingsMenu = () => {
   // let sliderBar: HTMLElement;
-  let settingsContainer: HTMLElement;
+  // let settingsContainer: HTMLElement;
   // let currentButton = 0;
   // let lastClickedButton = -1;
   let finalPathConfirm: HTMLElement;
@@ -17,12 +17,14 @@ let SettingsMenu = () => {
   let closeWithKey = ( e: KeyboardEvent ) => {
     if(e.key === 'Escape'){
       window.ViewManager.ChangeState(ViewState.PHOTO_LIST);
-      animate('.settings', {
+      console.log('h');
+      animate('.settings',{
         opacity: 0,
         translateX: '500px',
         easing: 'easeInOutQuad',
         duration: 250,
         onComplete: () => {
+          console.log('h');
           utils.set('.settings', { display: 'none' });
         }
       })
@@ -77,7 +79,7 @@ let SettingsMenu = () => {
     //   }
     // })
 
-    // window.addEventListener('keyup', closeWithKey);
+    window.addEventListener('keyup', closeWithKey);
 
     // window.addEventListener('touchend', ( e: TouchEvent ) => {
     //   if(sliderMouseDown){
@@ -194,7 +196,8 @@ let SettingsMenu = () => {
       }}>
         <div class="icon"><img draggable="false" src="/icon/x-solid.svg"></img></div>
       </div>
-      <div class="settings-container" ref={( el ) => settingsContainer = el}>
+      {/* <div class="settings-container" ref={( el ) => settingsContainer = el}> */}
+      <div class="settings-container">
         <div class="settings-block">
           <h1>Storage Settings</h1>
           <p>{ window.PhotoManager.PhotoCount() } Photos ({ bytesToFormatted(window.PhotoManager.PhotoSize(), 0) })</p>
