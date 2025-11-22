@@ -16,12 +16,14 @@ pub fn load_photos(window: tauri::Window, cache: State<Cache> ) {
   let base_dir = cache.get("photo-path".into()).unwrap();
 
   thread::spawn(move || {
-
     let mut photos: Vec<path::PathBuf> = Vec::new();
     let mut size: usize = 0;
 
+    let re = Regex::new(r"^[0-9]{4}-[0-9]{2}$").unwrap();
+
     for folder in fs::read_dir(&base_dir).unwrap() {
       let f = folder.unwrap();
+      if !re.is_match(f.file_name().to_str().unwrap()){ continue; }
 
       if f.metadata().unwrap().is_dir() {
         for photo in fs::read_dir(f.path()).unwrap() {

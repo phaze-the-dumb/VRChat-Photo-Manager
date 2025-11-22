@@ -122,3 +122,9 @@ v0.2.6:
   Hotfix 1:
     - Fixed loading when an image file is corrupted
     - Fixed update prompt when not connected to internet
+
+v0.2.7:
+  - Fixed image resizing when window is thinner than image
+  - Fixed closing settings with keybinds
+  - Fixed the behaviour of changing the photo path
+  - Fixed loading photos in folders that aren't VRChat folders
