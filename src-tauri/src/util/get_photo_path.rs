@@ -7,7 +7,13 @@ pub fn get_photo_path() -> path::PathBuf {
 
   match fs::read_to_string(config_path) {
     Ok(path) => {
-      path::PathBuf::from(path)
+      let p = path::PathBuf::from(path);
+
+      if fs::exists(&p).unwrap(){
+        p
+      } else{
+        dirs::picture_dir().unwrap().join("VRChat")
+      }
     },
     Err(_) => {
       let p = dirs::picture_dir().unwrap().join("VRChat");

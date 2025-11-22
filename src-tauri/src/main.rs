@@ -77,6 +77,7 @@ fn main() {
 
   println!("Loading App...");
   let photos_path = util::get_photo_path::get_photo_path();
+  println!("Loading photos from: {:#?}", &photos_path);
 
   cache.insert("photo-path".into(), photos_path.to_str().unwrap().to_owned());
 

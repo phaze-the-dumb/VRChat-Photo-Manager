@@ -314,23 +314,26 @@ let SettingsMenu = () => {
             </span>
             <span style={{ display: 'none' }} ref={( el ) => finalPathConfirm = el}>
               <span class="path" style={{ color: 'green' }} onClick={async () => {
-                finalPathPreviousData = finalPathData;
-                finalPathConfirm.style.display = 'none';
+                let changed = await invoke('change_final_path', { newPath: finalPathData });
 
-                await invoke('change_final_path', { newPath: finalPathData });
-                window.location.reload();
+                if(changed){
+                  finalPathPreviousData = finalPathData;
+                  finalPathConfirm.style.display = 'none';
 
-                animate('.settings', {
-                  opacity: 0,
-                  translateX: '500px',
-                  easing: 'easeInOutQuad',
-                  duration: 250,
-                  onComplete: () => {
-                    utils.set('.settings', { display: 'none' });
-                  }
-                })
+                  window.location.reload();
 
-                window.location.reload();
+                  animate('.settings', {
+                    opacity: 0,
+                    translateX: '500px',
+                    easing: 'easeInOutQuad',
+                    duration: 250,
+                    onComplete: () => {
+                      utils.set('.settings', { display: 'none' });
+                    }
+                  })
+
+                  window.location.reload();
+                }
               }}>
                 Save
               </span>
