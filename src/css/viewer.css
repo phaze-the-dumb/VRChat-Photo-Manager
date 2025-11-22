@@ -59,7 +59,8 @@
 }
 
 .image-container{
-  height: 100%;
+  max-width: none;
+  max-height: none;
   background-size: contain !important;
   background-repeat: no-repeat !important;
   background-position: center !important;

@@ -150,12 +150,38 @@ let PhotoViewer = () => {
     })
   }
 
+  let resizeImage = () => {
+    let dstWidth;
+    let dstHeight;
+
+    let imgHeight = imageViewer.height;
+    let imgWidth = imageViewer.width;
+
+    if(
+      imgWidth / window.innerWidth <
+      imgHeight / window.innerHeight
+    ) {
+      dstWidth = imgWidth * (window.innerHeight / imgHeight);
+      dstHeight = window.innerHeight;
+    } else{
+      dstWidth = window.innerWidth;
+      dstHeight = imgHeight * (window.innerWidth / imgWidth);
+    }
+
+    imageViewer.style.width = dstWidth + 'px';
+    imageViewer.style.height = dstHeight + 'px';
+  }
+
   onMount(() => {
     utils.set(photoControls, { translateX: '-50%' });
     utils.set(photoTrayCloseBtn, { translateX: '-50%', opacity: 0, scale: '0.75', bottom: '10px' });
     utils.set(photoLayerManager, { translateY: '20px', opacity: 0, display: 'none' });
 
     window.addEventListener('keyup', switchPhotoWithKey);
+
+    resizeImage();
+
+    window.addEventListener('resize', () => resizeImage());
 
     let contextMenuOpen = false;
     window.CloseAllPopups.push(() => {
@@ -465,7 +491,16 @@ let PhotoViewer = () => {
           <img draggable="false" src="/icon/x-solid.svg"></img>
         </div>
       </div>
-      <img class="image-container" ref={( el ) => imageViewer = el} />
+
+      <div style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        "justify-content": 'center',
+        'align-items': 'center'
+      }}>
+        <img class="image-container" ref={( el ) => imageViewer = el} />
+      </div>
 
       <div class="prev-button" onClick={() => {
         window.CloseAllPopups.forEach(p => p());
