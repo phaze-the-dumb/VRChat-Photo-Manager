@@ -128,3 +128,6 @@ v0.2.7:
   - Fixed closing settings with keybinds
   - Fixed the behaviour of changing the photo path
   - Fixed loading photos in folders that aren't VRChat folders
+
+  Hotfix 1:
+    - Fixed resizing images (again)

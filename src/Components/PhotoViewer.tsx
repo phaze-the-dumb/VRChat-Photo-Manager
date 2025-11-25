@@ -154,8 +154,8 @@ let PhotoViewer = () => {
     let dstWidth;
     let dstHeight;
 
-    let imgHeight = imageViewer.height;
-    let imgWidth = imageViewer.width;
+    let imgHeight = imageViewer.naturalHeight;
+    let imgWidth = imageViewer.naturalWidth;
 
     if(
       imgWidth / window.innerWidth <
@@ -178,9 +178,6 @@ let PhotoViewer = () => {
     utils.set(photoLayerManager, { translateY: '20px', opacity: 0, display: 'none' });
 
     window.addEventListener('keyup', switchPhotoWithKey);
-
-    resizeImage();
-
     window.addEventListener('resize', () => resizeImage());
 
     let contextMenuOpen = false;
@@ -262,6 +259,8 @@ let PhotoViewer = () => {
       if(photo){
         imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost/') + window.PhotoViewerManager.CurrentPhoto()?.path.split('\\').join('/') + "?full";
         imageViewer.crossOrigin = 'anonymous';
+
+        imageViewer.onload = () => { resizeImage(); }
 
         animate(imageViewer, {
           opacity: 1,

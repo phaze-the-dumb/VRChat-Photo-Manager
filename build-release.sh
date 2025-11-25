@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.2.7
+VERSION=0.2.7-hot1
 
 # Linux builds
 NO_STRIP=true pnpm tauri build
